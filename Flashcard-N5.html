@@ -152,6 +152,17 @@
 
         button.small-btn:hover { opacity: 0.8; }
 
+        button.secondary-btn {
+            background: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        button.secondary-btn:hover {
+            background: #e4e6eb;
+            opacity: 1;
+        }
+
         /* --- Study App Core --- */
         .app-core {
             width: 100%;
@@ -428,6 +439,11 @@
         <div class="settings-row">
             <input type="number" id="session-limit" placeholder="Limit session (e.g. 20)">
             <button class="small-btn" onclick="applySettings()">Compile Deck</button>
+        </div>
+        <div class="settings-row" style="margin-top: 8px;">
+            <button class="small-btn secondary-btn" style="flex: 1;" onclick="exportData()">Export Data</button>
+            <button class="small-btn secondary-btn" style="flex: 1;" onclick="document.getElementById('import-file').click()">Import Data</button>
+            <input type="file" id="import-file" style="display: none" accept=".json" onchange="importData(event)">
         </div>
     </div>
 
@@ -767,6 +783,44 @@
             localStorage.setItem('jpnSelectedDecks', JSON.stringify(selectedDecks));
         }
 
+        function exportData() {
+            const dataStr = JSON.stringify(database, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `flashcard_backup_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedDB = JSON.parse(e.target.result);
+                    if (typeof importedDB === 'object' && importedDB !== null) {
+                        localStorage.setItem('jpnFlashcardDB', JSON.stringify(importedDB));
+                        alert('Data imported successfully! The page will now reload.');
+                        location.reload();
+                    } else {
+                        alert('Invalid data format.');
+                    }
+                } catch (error) {
+                    alert('Error importing data: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+            // Reset input so the same file can be selected again
+            event.target.value = '';
+        }
+
         // --- View Controller ---
         function switchView(view) {
             document.getElementById('tab-study').classList.toggle('active', view === 'study');
@@ -812,8 +866,18 @@
             }
             let selectedMastered = masteredCards.slice(0, numMastered);
             
-            let numLearning = limit - selectedMastered.length;
-            let learningCards = reviewCards.concat(unseenCards).slice(0, numLearning);
+            let numLearning = Math.max(0, limit - selectedMastered.length);
+            
+            // Ensure a mix of review and unseen cards
+            let numReview = Math.min(reviewCards.length, Math.ceil(numLearning / 2));
+            let numUnseen = Math.min(unseenCards.length, numLearning - numReview);
+            
+            // If we didn't fill numLearning, top off with review cards if available
+            if (numReview + numUnseen < numLearning) {
+                numReview = Math.min(reviewCards.length, numLearning - numUnseen);
+            }
+            
+            let learningCards = reviewCards.slice(0, numReview).concat(unseenCards.slice(0, numUnseen));
             
             activePool = selectedMastered.concat(learningCards);
             shuffle(activePool);
