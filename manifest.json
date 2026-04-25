@@ -1,0 +1,17 @@
+{
+  "name": "Pro Japanese Flashcards",
+  "short_name": "JP Flashcards",
+  "description": "Minimalist Japanese N5 Flashcards with Spaced Repetition",
+  "start_url": "./Flashcard-N5.html",
+  "display": "standalone",
+  "background_color": "#f5f6f8",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

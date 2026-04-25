@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <title>Pro Japanese Flashcards</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --text-main: #1c1e21;
+            --text-secondary: #65676b;
+            --border-color: #dadde1;
+            --accent-blue: #1877f2;
+            --card-bg: #ffffff;
+            --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.12);
+            --btn-red: #ff4b4b;
+            --btn-green: #00c370;
+            --btn-yellow: #f5a623;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* --- Navigation --- */
+        .nav-tabs {
+            display: flex;
+            background: #e4e6eb;
+            padding: 4px;
+            border-radius: 99px;
+            margin-bottom: 24px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .nav-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px 0;
+            border-radius: 99px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: 0.2s;
+            user-select: none;
+        }
+
+        .nav-tab.active {
+            background: var(--card-bg);
+            color: var(--text-main);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* --- Dashboard --- */
+        .dashboard {
+            width: 100%;
+            max-width: 420px;
+            margin-bottom: 24px;
+        }
+
+        .deck-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+            justify-content: center;
+        }
+
+        .deck-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: var(--card-bg);
+            padding: 8px 16px;
+            border-radius: 99px;
+            border: 1px solid var(--border-color);
+            user-select: none;
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+        }
+
+        .deck-label:has(input:checked) {
+            border-color: var(--text-main);
+            color: var(--text-main);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .deck-label input { display: none; }
+
+        .settings-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            align-items: center;
+        }
+
+        input[type="number"], input[type="text"], select {
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 0.9rem;
+            flex: 1;
+            background: var(--card-bg);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2365676b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 10px auto;
+            padding-right: 32px;
+            cursor: pointer;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        input:focus, select:focus { border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.1); }
+
+        button.small-btn {
+            padding: 12px 20px;
+            background: var(--text-main);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+        }
+
+        button.small-btn:hover { opacity: 0.8; }
+
+        /* --- Study App Core --- */
+        .app-core {
+            width: 100%;
+            max-width: 360px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .stats { display: flex; gap: 6px; align-items: center; }
+        .stat-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .stat-text { font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); margin-right: 8px;}
+        .dot-unseen { background: var(--border-color); }
+        .dot-review { background: var(--btn-red); }
+        .dot-mastered { background: var(--btn-green); }
+
+        .mode-toggle {
+            display: flex;
+            background: var(--border-color);
+            border-radius: 99px;
+            padding: 2px;
+        }
+
+        .mode-btn {
+            padding: 6px 16px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 99px;
+            cursor: pointer;
+        }
+        .mode-btn.active { background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        
+        .flashcard-container {
+            perspective: 1200px;
+            width: 100%;
+            aspect-ratio: 4/5;
+            max-height: 450px;
+            margin-bottom: 32px;
+            touch-action: none; /* Prevent scroll while swiping */
+        }
+        
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-style: preserve-3d;
+            border-radius: 28px;
+            box-shadow: var(--shadow-soft);
+            cursor: pointer;
+            will-change: transform;
+        }
+
+        .flashcard.is-flipped { transform: rotateY(180deg); }
+        
+        .card-face {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 28px;
+            background: var(--card-bg);
+            padding: 32px;
+            box-sizing: border-box;
+            text-align: center;
+            border: 1px solid rgba(0,0,0,0.05);
+            pointer-events: none; /* Let drag events pass to parent */
+        }
+        
+        .card-back { transform: rotateY(180deg); background: #fdfdfd; }
+        
+        .kanji { font-size: 4rem; font-weight: 700; color: var(--text-main); letter-spacing: -1px; }
+        .hiragana { font-size: 2.2rem; color: var(--text-main); margin-bottom: 12px; font-weight: 600; }
+        .romaji { font-size: 1rem; color: var(--text-secondary); margin-bottom: 24px; letter-spacing: 1px; }
+        .meaning { font-size: 1.5rem; font-weight: 700; color: var(--accent-blue); }
+        
+        .eval-controls {
+            display: flex;
+            gap: 16px;
+            width: 100%;
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .eval-controls.visible { opacity: 1; transform: translateY(0); pointer-events: all; }
+        
+        .btn-eval {
+            flex: 1;
+            padding: 16px 0;
+            font-size: 0.95rem;
+            font-weight: 800;
+            cursor: pointer;
+            border: none;
+            border-radius: 16px;
+            color: white;
+            transition: transform 0.1s, filter 0.2s;
+        }
+
+        .btn-eval:active { transform: scale(0.96); }
+        .btn-review { background-color: var(--btn-red); }
+        .btn-mastered { background-color: var(--btn-green); }
+
+        .keyboard-hints { margin-top: 30px; font-size: 0.8rem; color: var(--text-secondary); text-align: center; font-weight: 500;}
+
+        /* --- List View --- */
+        .list-core {
+            display: none;
+            width: 100%;
+            max-width: 600px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: var(--shadow-soft);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .list-core.active { display: block; }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .list-items {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: var(--bg-color);
+            border-radius: 12px;
+        }
+
+        .list-info { display: flex; flex-direction: column; gap: 4px; }
+        .list-kanji { font-size: 1.2rem; font-weight: 700; }
+        .list-meaning { font-size: 0.85rem; color: var(--text-secondary); }
+        
+        .list-actions { display: flex; align-items: center; gap: 12px; }
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 99px;
+            color: white;
+            text-transform: uppercase;
+        }
+        .badge.unseen { background: var(--text-secondary); }
+        .badge.review { background: var(--btn-red); }
+        .badge.mastered { background: var(--btn-green); }
+
+        .btn-reset {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .btn-reset:hover { background: #e4e6eb; }
+
+        .custom-dropdown {
+            position: relative;
+            display: inline-block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            user-select: none;
+        }
+
+        .dropdown-selected {
+            padding: 8px 16px;
+            padding-right: 32px;
+            border-radius: 99px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2365676b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 10px auto;
+        }
+
+        .dropdown-selected:hover, .custom-dropdown.active .dropdown-selected {
+            color: var(--text-main);
+            border-color: var(--text-main);
+            background-color: var(--card-bg);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .dropdown-options {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background-color: var(--card-bg);
+            min-width: 160px;
+            box-shadow: var(--shadow-hover);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            z-index: 100;
+            overflow: hidden;
+        }
+
+        .custom-dropdown.active .dropdown-options {
+            display: block;
+            animation: fadeIn 0.15s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-option {
+            padding: 12px 16px;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .dropdown-option:hover {
+            background-color: var(--bg-color);
+        }
+        
+        .dropdown-option.selected {
+            background-color: #e4e6eb;
+            font-weight: 700;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="nav-tabs">
+        <div class="nav-tab active" id="tab-study" onclick="switchView('study')">Study Mode</div>
+        <div class="nav-tab" id="tab-list" onclick="switchView('list')">List Revision</div>
+    </div>
+
+    <div class="dashboard">
+        <div class="deck-selector" id="deck-selector"></div>
+        <div class="settings-row">
+            <input type="number" id="session-limit" placeholder="Limit session (e.g. 20)">
+            <button class="small-btn" onclick="applySettings()">Compile Deck</button>
+        </div>
+    </div>
+
+    <div class="app-core" id="app-study">
+        <div class="header">
+            <div class="stats">
+                <span class="stat-text" id="stat-unseen">0 Left</span>
+                <div class="stat-dot dot-review" title="Needs Review"></div>
+                <div class="stat-dot dot-mastered" title="Mastered"></div>
+            </div>
+            <div class="mode-toggle">
+                <button class="mode-btn active" id="btn-seq" onclick="setMode('sequential')">Seq</button>
+                <button class="mode-btn" id="btn-quiz" onclick="setMode('quiz')">Mix</button>
+            </div>
+        </div>
+
+        <div class="flashcard-container" id="card-container">
+            <div class="flashcard" id="flashcard">
+                <div class="card-face card-front">
+                    <div class="kanji" id="front-text">...</div>
+                </div>
+                <div class="card-face card-back">
+                    <div class="hiragana" id="back-hiragana"></div>
+                    <div class="romaji" id="back-romaji"></div>
+                    <div class="meaning" id="back-meaning"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="eval-controls" id="eval-controls">
+            <button class="btn-eval btn-review" onclick="markCard('review', event)">Review</button>
+            <button class="btn-eval btn-mastered" onclick="markCard('mastered', event)">Mastered</button>
+        </div>
+
+        <div class="keyboard-hints">Space to Flip • Swipe Left/Right to Grade</div>
+    </div>
+
+    <div class="list-core" id="app-list">
+        <div class="list-header">
+            <strong>Database Overview</strong>
+            <div class="custom-dropdown" id="list-filter-dropdown">
+                <div class="dropdown-selected" id="list-filter-selected" onclick="toggleDropdown(event)">All Status</div>
+                <div class="dropdown-options" id="list-filter-options">
+                    <div class="dropdown-option selected" onclick="selectFilter('all', 'All Status', this)">All Status</div>
+                    <div class="dropdown-option" onclick="selectFilter('unseen', 'Unseen Only', this)">Unseen Only</div>
+                    <div class="dropdown-option" onclick="selectFilter('review', 'Review Only', this)">Review Only</div>
+                    <div class="dropdown-option" onclick="selectFilter('mastered', 'Mastered Only', this)">Mastered Only</div>
+                </div>
+            </div>
+        </div>
+        <div class="list-items" id="list-items-container">
+            </div>
+    </div>
+
+    <script>
+        // --- High Volume JLPT N5 Dictionary (200+ Core Items) ---
+        const defaultData = {
+            "Adjectives": [
+                { id: 'adj_1', kanji: '大きい', hiragana: 'おおきい', romaji: 'ookii', meaning: '大的', status: 'unseen' },
+                { id: 'adj_2', kanji: '小さい', hiragana: 'ちいさい', romaji: 'chiisai', meaning: '小的', status: 'unseen' },
+                { id: 'adj_3', kanji: '高い', hiragana: 'たかい', romaji: 'takai', meaning: '高的/贵的', status: 'unseen' },
+                { id: 'adj_4', kanji: '安い', hiragana: 'やすい', romaji: 'yasui', meaning: '便宜的', status: 'unseen' },
+                { id: 'adj_5', kanji: '新しい', hiragana: 'あたらしい', romaji: 'atarashii', meaning: '新的', status: 'unseen' },
+                { id: 'adj_6', kanji: '古い', hiragana: 'ふるい', romaji: 'furui', meaning: '旧的', status: 'unseen' },
+                { id: 'adj_7', kanji: '暑い', hiragana: 'あつい', romaji: 'atsui', meaning: '热的（天气）', status: 'unseen' },
+                { id: 'adj_8', kanji: '寒い', hiragana: 'さむい', romaji: 'samui', meaning: '冷的（天气）', status: 'unseen' },
+                { id: 'adj_9', kanji: '忙しい', hiragana: 'いそがしい', romaji: 'isogashii', meaning: '忙的', status: 'unseen' },
+                { id: 'adj_10', kanji: '楽しい', hiragana: 'たのしい', romaji: 'tanoshii', meaning: '开心的', status: 'unseen' },
+                { id: 'adj_11', kanji: '難しい', hiragana: 'むずかしい', romaji: 'muzukashii', meaning: '困难的', status: 'unseen' },
+                { id: 'adj_12', kanji: '簡単', hiragana: 'かんたん', romaji: 'kantan', meaning: '简单（な）', status: 'unseen' },
+                { id: 'adj_13', kanji: 'きれい', hiragana: 'きれい', romaji: 'kirei', meaning: '漂亮/干净（な）', status: 'unseen' },
+                { id: 'adj_14', kanji: '元気', hiragana: 'げんき', romaji: 'genki', meaning: '有精神的（な）', status: 'unseen' },
+                { id: 'adj_15', kanji: '重い', hiragana: 'おもい', romaji: 'omoi', meaning: '重的', status: 'unseen' },
+                { id: 'adj_16', kanji: '軽い', hiragana: 'かるい', romaji: 'karui', meaning: '轻的', status: 'unseen' },
+                { id: 'adj_17', kanji: '近い', hiragana: 'ちかい', romaji: 'chikai', meaning: '近的', status: 'unseen' },
+                { id: 'adj_18', kanji: '遠い', hiragana: 'とおい', romaji: 'tooi', meaning: '远的', status: 'unseen' },
+                { id: 'adj_19', kanji: 'おいしい', hiragana: 'おいしい', romaji: 'oishii', meaning: '好吃的', status: 'unseen' },
+                { id: 'adj_20', kanji: 'まずい', hiragana: 'mazui', meaning: '难吃的', status: 'unseen' },
+                { id: 'adj_21', kanji: '痛い', hiragana: 'いたい', romaji: 'itai', meaning: '痛的', status: 'unseen' },
+                { id: 'adj_22', kanji: '甘い', hiragana: 'あまい', romaji: 'amai', meaning: '甜的', status: 'unseen' },
+                { id: 'adj_23', kanji: '辛い', hiragana: 'からい', romaji: 'karai', meaning: '辣的', status: 'unseen' },
+                { id: 'adj_24', kanji: '広い', hiragana: 'ひろい', romaji: 'hiroi', meaning: '宽的', status: 'unseen' },
+                { id: 'adj_25', kanji: '狭い', hiragana: 'せまい', romaji: 'semai', meaning: '窄的', status: 'unseen' },
+                { id: 'adj_26', kanji: '暇', hiragana: 'ひま', romaji: 'hima', meaning: '空闲的（な）', status: 'unseen' },
+                { id: 'adj_27', kanji: '静か', hiragana: 'しずか', romaji: 'shizuka', meaning: '安静的（な）', status: 'unseen' },
+                { id: 'adj_28', kanji: '便利', hiragana: 'べんり', romaji: 'benri', meaning: '方便的（な）', status: 'unseen' },
+                { id: 'adj_29', kanji: '好き', hiragana: 'すき', romaji: 'suki', meaning: '喜欢的（な）', status: 'unseen' },
+                { id: 'adj_30', kanji: '有名', hiragana: 'ゆうめい', romaji: 'yuumei', meaning: '有名的（な）', status: 'unseen' },
+                { id: 'adj_31', kanji: '多い', hiragana: 'おおい', romaji: 'ooi', meaning: '多的', status: 'unseen' },
+                { id: 'adj_32', kanji: '少ない', hiragana: 'すくない', romaji: 'sukunai', meaning: '少的', status: 'unseen' },
+                { id: 'adj_33', kanji: '長い', hiragana: 'ながい', romaji: 'nagai', meaning: '长的', status: 'unseen' },
+                { id: 'adj_34', kanji: '短い', hiragana: 'みじかい', romaji: 'mijikai', meaning: '短的', status: 'unseen' },
+                { id: 'adj_35', kanji: '速い', hiragana: 'はやい', romaji: 'hayai', meaning: '快的', status: 'unseen' },
+                { id: 'adj_36', kanji: '遅い', hiragana: 'おそい', romaji: 'osoi', meaning: '慢的', status: 'unseen' },
+                { id: 'adj_37', kanji: '暖かい', hiragana: 'あたたかい', romaji: 'atatakai', meaning: '温暖的', status: 'unseen' },
+                { id: 'adj_38', kanji: '涼しい', hiragana: 'すずしい', romaji: 'suzushii', meaning: '凉爽的', status: 'unseen' },
+                { id: 'adj_39', kanji: '冷たい', hiragana: 'つめたい', romaji: 'tsumetai', meaning: '冰冷的（物体）', status: 'unseen' },
+                { id: 'adj_40', kanji: '眠い', hiragana: 'ねむい', romaji: 'nemui', meaning: '困倦的', status: 'unseen' },
+                { id: 'adj_41', kanji: '強い', hiragana: 'つよい', romaji: 'tsuyoi', meaning: '强的', status: 'unseen' },
+                { id: 'adj_42', kanji: '弱い', hiragana: 'よわい', romaji: 'yowai', meaning: '弱的', status: 'unseen' },
+                { id: 'adj_43', kanji: '若い', hiragana: 'わかい', romaji: 'wakai', meaning: '年轻的', status: 'unseen' },
+                { id: 'adj_44', kanji: '暗い', hiragana: 'くらい', romaji: 'kurai', meaning: '暗的', status: 'unseen' },
+                { id: 'adj_45', kanji: '明るい', hiragana: 'あかるい', romaji: 'akarui', meaning: '明亮的', status: 'unseen' },
+                { id: 'adj_46', kanji: '危ない', hiragana: 'あぶない', romaji: 'abunai', meaning: '危险的', status: 'unseen' },
+                { id: 'adj_47', kanji: '汚い', hiragana: 'きたない', romaji: 'kitanai', meaning: '脏的', status: 'unseen' },
+                { id: 'adj_48', kanji: '厚い', hiragana: 'あつい', romaji: 'atsui', meaning: '厚的', status: 'unseen' },
+                { id: 'adj_49', kanji: '薄い', hiragana: 'うすい', romaji: 'usui', meaning: '薄的', status: 'unseen' },
+                { id: 'adj_50', kanji: '太い', hiragana: 'ふとい', romaji: 'futoi', meaning: '粗的/胖的', status: 'unseen' },
+                { id: 'adj_51', kanji: '細い', hiragana: 'ほそい', romaji: 'hosoi', meaning: '细的/瘦的', status: 'unseen' },
+                { id: 'adj_52', kanji: '丸い', hiragana: 'まるい', romaji: 'marui', meaning: '圆的', status: 'unseen' },
+                { id: 'adj_53', kanji: '欲しい', hiragana: 'ほしい', romaji: 'hoshii', meaning: '想要的', status: 'unseen' },
+                { id: 'adj_54', kanji: '苦い', hiragana: 'にがい', romaji: 'nigai', meaning: '苦的', status: 'unseen' },
+                { id: 'adj_55', kanji: '酸っぱい', hiragana: 'すっぱい', romaji: 'suppai', meaning: '酸的', status: 'unseen' },
+                { id: 'adj_56', kanji: 'うるさい', hiragana: 'うるさい', romaji: 'urusai', meaning: '吵闹的', status: 'unseen' },
+                { id: 'adj_57', kanji: 'すごい', hiragana: 'すごい', romaji: 'sugoi', meaning: '厉害的', status: 'unseen' },
+                { id: 'adj_58', kanji: '白い', hiragana: 'しろい', romaji: 'shiroi', meaning: '白的', status: 'unseen' },
+                { id: 'adj_59', kanji: '黒い', hiragana: 'くろい', romaji: 'kuroi', meaning: '黑的', status: 'unseen' },
+                { id: 'adj_60', kanji: '赤い', hiragana: 'あかい', romaji: 'akai', meaning: '红的', status: 'unseen' },
+                { id: 'adj_61', kanji: '青い', hiragana: 'あおい', romaji: 'aoi', meaning: '蓝的', status: 'unseen' },
+                { id: 'adj_62', kanji: '黄色い', hiragana: 'きいろい', romaji: 'kiiroi', meaning: '黄的', status: 'unseen' },
+                { id: 'adj_63', kanji: '茶色い', hiragana: 'ちゃいろい', romaji: 'chairoi', meaning: '棕色的', status: 'unseen' },
+                { id: 'adj_64', kanji: '嫌い', hiragana: 'きらい', romaji: 'kirai', meaning: '讨厌的（な）', status: 'unseen' },
+                { id: 'adj_65', kanji: '大好き', hiragana: 'だいすき', romaji: 'daisuki', meaning: '最喜欢的（な）', status: 'unseen' },
+                { id: 'adj_66', kanji: '丈夫', hiragana: 'じょうぶ', romaji: 'joubu', meaning: '结实的（な）', status: 'unseen' },
+                { id: 'adj_67', kanji: '大丈夫', hiragana: 'だいじょうぶ', romaji: 'daijoubu', meaning: '没问题的（な）', status: 'unseen' },
+                { id: 'adj_68', kanji: '大切', hiragana: 'たいせつ', romaji: 'taisetsu', meaning: '重要的（な）', status: 'unseen' },
+                { id: 'adj_69', kanji: '丁寧', hiragana: 'ていねい', romaji: 'teinei', meaning: '礼貌的/仔细的（な）', status: 'unseen' },
+                { id: 'adj_70', kanji: '上手', hiragana: 'じょうず', romaji: 'jouzu', meaning: '擅长的（な）', status: 'unseen' },
+                { id: 'adj_71', kanji: '下手', hiragana: 'へた', romaji: 'heta', meaning: '不擅长的（な）', status: 'unseen' },
+                { id: 'adj_72', kanji: '賑やか', hiragana: 'にぎやか', romaji: 'nigiyaka', meaning: '热闹的（な）', status: 'unseen' },
+                { id: 'adj_73', kanji: '不便', hiragana: 'ふべん', romaji: 'fuben', meaning: '不方便的（な）', status: 'unseen' },
+                { id: 'adj_74', kanji: '立派', hiragana: 'りっぱ', romaji: 'rippa', meaning: '杰出的/壮丽的（な）', status: 'unseen' },
+                { id: 'adj_75', kanji: '色々', hiragana: 'いろいろ', romaji: 'iroiro', meaning: '各种各样的（な）', status: 'unseen' },
+                { id: 'adj_76', kanji: '大変', hiragana: 'たいへん', romaji: 'taihen', meaning: '辛苦的/严重的（な）', status: 'unseen' },
+                { id: 'adj_77', kanji: '親切', hiragana: 'しんせつ', romaji: 'shinsetsu', meaning: '亲切的/热情的（な）', status: 'unseen' },
+                { id: 'adj_78', kanji: '同じ', hiragana: 'おなじ', romaji: 'onaji', meaning: '相同的', status: 'unseen' }
+            ],
+            "Verbs": [
+                { id: 'vrb_1', kanji: '食べる', hiragana: 'たべる', romaji: 'taberu', meaning: '吃', status: 'unseen' },
+                { id: 'vrb_2', kanji: '飲む', hiragana: 'のむ', romaji: 'nomu', meaning: '喝', status: 'unseen' },
+                { id: 'vrb_3', kanji: '行く', hiragana: 'いく', romaji: 'iku', meaning: '去', status: 'unseen' },
+                { id: 'vrb_4', kanji: '来る', hiragana: 'くる', romaji: 'kuru', meaning: '来', status: 'unseen' },
+                { id: 'vrb_5', kanji: '見る', hiragana: 'みる', romaji: 'miru', meaning: '看', status: 'unseen' },
+                { id: 'vrb_6', kanji: '聞く', hiragana: 'きく', romaji: 'kiku', meaning: '听/问', status: 'unseen' },
+                { id: 'vrb_7', kanji: '話す', hiragana: 'はなす', romaji: 'hanasu', meaning: '说', status: 'unseen' },
+                { id: 'vrb_8', kanji: '買う', hiragana: 'かう', romaji: 'kau', meaning: '买', status: 'unseen' },
+                { id: 'vrb_9', kanji: '書く', hiragana: 'かく', romaji: 'kaku', meaning: '写', status: 'unseen' },
+                { id: 'vrb_10', kanji: '読む', hiragana: 'よむ', romaji: 'yomu', meaning: '读', status: 'unseen' },
+                { id: 'vrb_11', kanji: '寝る', hiragana: 'ねる', romaji: 'neru', meaning: '睡觉', status: 'unseen' },
+                { id: 'vrb_12', kanji: '起きる', hiragana: 'おきる', romaji: 'okiru', meaning: '起床', status: 'unseen' },
+                { id: 'vrb_13', kanji: '働く', hiragana: 'はたらく', romaji: 'hataraku', meaning: '工作', status: 'unseen' },
+                { id: 'vrb_14', kanji: '休む', hiragana: 'やすむ', romaji: 'yasumu', meaning: '休息', status: 'unseen' },
+                { id: 'vrb_15', kanji: '作る', hiragana: 'つくる', romaji: 'tsukuru', meaning: '制作', status: 'unseen' },
+                { id: 'vrb_16', kanji: '使う', hiragana: 'つかう', romaji: 'tsukau', meaning: '使用', status: 'unseen' },
+                { id: 'vrb_17', kanji: '開ける', hiragana: 'あける', romaji: 'akeru', meaning: '打开', status: 'unseen' },
+                { id: 'vrb_18', kanji: '閉める', hiragana: 'しめる', romaji: 'shimeru', meaning: '关闭', status: 'unseen' },
+                { id: 'vrb_19', kanji: '始める', hiragana: 'はじめる', romaji: 'hajimeru', meaning: '开始', status: 'unseen' },
+                { id: 'vrb_20', kanji: '終わる', hiragana: 'おわる', romaji: 'owaru', meaning: '结束', status: 'unseen' },
+                { id: 'vrb_21', kanji: '帰る', hiragana: 'かえる', romaji: 'kaeru', meaning: '回去', status: 'unseen' },
+                { id: 'vrb_22', kanji: '分かる', hiragana: 'わかる', romaji: 'wakaru', meaning: '明白/懂', status: 'unseen' },
+                { id: 'vrb_23', kanji: '会う', hiragana: 'あう', romaji: 'au', meaning: '见面', status: 'unseen' },
+                { id: 'vrb_24', kanji: '遊ぶ', hiragana: 'あそぶ', romaji: 'asobu', meaning: '玩', status: 'unseen' },
+                { id: 'vrb_25', kanji: '待つ', hiragana: 'まつ', romaji: 'matsu', meaning: '等待', status: 'unseen' },
+                { id: 'vrb_26', kanji: '乗る', hiragana: 'のる', romaji: 'noru', meaning: '乘坐', status: 'unseen' },
+                { id: 'vrb_27', kanji: '降りる', hiragana: 'おりる', romaji: 'oriru', meaning: '下来/下车', status: 'unseen' },
+                { id: 'vrb_28', kanji: '入る', hiragana: 'はいる', romaji: 'hairu', meaning: '进入', status: 'unseen' },
+                { id: 'vrb_29', kanji: '出る', hiragana: 'deru', meaning: '出去/离开', status: 'unseen' },
+                { id: 'vrb_30', kanji: '立つ', hiragana: 'たつ', romaji: 'tatsu', meaning: '站立', status: 'unseen' },
+                { id: 'vrb_31', kanji: '座る', hiragana: 'すわる', romaji: 'suwaru', meaning: '坐', status: 'unseen' },
+                { id: 'vrb_32', kanji: '泳ぐ', hiragana: 'およぐ', romaji: 'oyogu', meaning: '游泳', status: 'unseen' },
+                { id: 'vrb_33', kanji: '歌う', hiragana: 'うたう', romaji: 'utau', meaning: '唱歌', status: 'unseen' },
+                { id: 'vrb_34', kanji: '呼ぶ', hiragana: 'よぶ', romaji: 'yobu', meaning: '呼叫', status: 'unseen' },
+                { id: 'vrb_35', kanji: '洗う', hiragana: 'あらう', romaji: 'arau', meaning: '洗', status: 'unseen' },
+                { id: 'vrb_36', kanji: '歩く', hiragana: 'あるく', romaji: 'aruku', meaning: '步行', status: 'unseen' },
+                { id: 'vrb_37', kanji: '走る', hiragana: 'はしる', romaji: 'hashiru', meaning: '跑', status: 'unseen' },
+                { id: 'vrb_38', kanji: '教える', hiragana: 'おしえる', romaji: 'oshieru', meaning: '教', status: 'unseen' },
+                { id: 'vrb_39', kanji: '覚える', hiragana: 'おぼえる', romaji: 'oboeru', meaning: '记住', status: 'unseen' },
+                { id: 'vrb_40', kanji: '忘れる', hiragana: 'わすれる', romaji: 'wasureru', meaning: '忘记', status: 'unseen' },
+                { id: 'vrb_41', kanji: '貸す', hiragana: 'かす', romaji: 'kasu', meaning: '借出', status: 'unseen' },
+                { id: 'vrb_42', kanji: '借りる', hiragana: 'かりる', romaji: 'kariru', meaning: '借入', status: 'unseen' },
+                { id: 'vrb_43', kanji: '返す', hiragana: 'かえす', romaji: 'kaesu', meaning: '归还', status: 'unseen' },
+                { id: 'vrb_44', kanji: '脱ぐ', hiragana: 'ぬぐ', romaji: 'nugu', meaning: '脱（衣服）', status: 'unseen' },
+                { id: 'vrb_45', kanji: '着る', hiragana: 'きる', romaji: 'kiru', meaning: '穿（上半身）', status: 'unseen' },
+                { id: 'vrb_46', kanji: '履く', hiragana: 'はく', romaji: 'haku', meaning: '穿（鞋/裤子）', status: 'unseen' },
+                { id: 'vrb_47', kanji: '疲れる', hiragana: 'つかれる', romaji: 'tsukareru', meaning: '疲累', status: 'unseen' },
+                { id: 'vrb_48', kanji: '違う', hiragana: 'ちがう', romaji: 'chigau', meaning: '不同/错误', status: 'unseen' },
+                { id: 'vrb_49', kanji: '閉まる', hiragana: 'しまる', romaji: 'shimaru', meaning: '关闭（自动）', status: 'unseen' },
+                { id: 'vrb_50', kanji: '開く', hiragana: 'あく', romaji: 'aku', meaning: '打开（自动）', status: 'unseen' },
+                { id: 'vrb_51', kanji: '消す', hiragana: 'けす', romaji: 'kesu', meaning: '熄灭/消除', status: 'unseen' },
+                { id: 'vrb_52', kanji: '消える', hiragana: 'きえる', romaji: 'kieru', meaning: '消失/熄灭（自动）', status: 'unseen' },
+                { id: 'vrb_53', kanji: '咲く', hiragana: 'さく', romaji: 'saku', meaning: '开花', status: 'unseen' },
+                { id: 'vrb_54', kanji: '吹く', hiragana: 'ふく', romaji: 'fuku', meaning: '吹', status: 'unseen' },
+                { id: 'vrb_55', kanji: '飛ぶ', hiragana: 'とぶ', romaji: 'tobu', meaning: '飞', status: 'unseen' },
+                { id: 'vrb_56', kanji: '止まる', hiragana: 'とまる', romaji: 'tomaru', meaning: '停止', status: 'unseen' },
+                { id: 'vrb_57', kanji: '曲がる', hiragana: 'まがる', romaji: 'magaru', meaning: '转弯', status: 'unseen' },
+                { id: 'vrb_58', kanji: '渡る', hiragana: 'わたる', romaji: 'wataru', meaning: '渡过', status: 'unseen' },
+                { id: 'vrb_59', kanji: '頼む', hiragana: 'たのむ', romaji: 'tanomu', meaning: '请求', status: 'unseen' },
+                { id: 'vrb_60', kanji: '答える', hiragana: 'こたえる', romaji: 'kotaeru', meaning: '回答', status: 'unseen' },
+                { id: 'vrb_61', kanji: '質問する', hiragana: 'しつもんする', romaji: 'shitsumonsuru', meaning: '提问', status: 'unseen' },
+                { id: 'vrb_62', kanji: '勉強する', hiragana: 'べんきょうする', romaji: 'benkyousuru', meaning: '学习', status: 'unseen' },
+                { id: 'vrb_63', kanji: '掃除する', hiragana: 'そうじする', romaji: 'soujisuru', meaning: '打扫', status: 'unseen' },
+                { id: 'vrb_64', kanji: '料理する', hiragana: 'りょうりする', romaji: 'ryourisuru', meaning: '做饭', status: 'unseen' },
+                { id: 'vrb_65', kanji: '洗濯する', hiragana: 'せんたくする', romaji: 'sentakusuru', meaning: '洗衣服', status: 'unseen' },
+                { id: 'vrb_66', kanji: '散歩する', hiragana: 'さんぽする', romaji: 'sanposuru', meaning: '散步', status: 'unseen' },
+                { id: 'vrb_67', kanji: '結婚する', hiragana: 'けっこんする', romaji: 'kekkonsuru', meaning: '结婚', status: 'unseen' }
+            ],
+            "Nouns": [
+                { id: 'noun_1', kanji: '人', hiragana: 'ひと', romaji: 'hito', meaning: '人', status: 'unseen' },
+                { id: 'noun_2', kanji: '学生', hiragana: 'がくせい', romaji: 'gakusei', meaning: '学生', status: 'unseen' },
+                { id: 'noun_3', kanji: '先生', hiragana: 'せんせい', romaji: 'sensei', meaning: '老师', status: 'unseen' },
+                { id: 'noun_4', kanji: '学校', hiragana: 'がっこう', romaji: 'gakkou', meaning: '学校', status: 'unseen' },
+                { id: 'noun_5', kanji: '会社', hiragana: 'かいしゃ', romaji: 'kaisha', meaning: '公司', status: 'unseen' },
+                { id: 'noun_6', kanji: '家', hiragana: 'いえ', romaji: 'ie', meaning: '家', status: 'unseen' },
+                { id: 'noun_7', kanji: '部屋', hiragana: 'へや', romaji: 'heya', meaning: '房间', status: 'unseen' },
+                { id: 'noun_8', kanji: '友達', hiragana: 'ともだち', romaji: 'tomodachi', meaning: '朋友', status: 'unseen' },
+                { id: 'noun_9', kanji: '時間', hiragana: 'じかん', romaji: 'jikan', meaning: '时间', status: 'unseen' },
+                { id: 'noun_10', kanji: '今日', hiragana: 'きょう', romaji: 'kyou', meaning: '今天', status: 'unseen' },
+                { id: 'noun_11', kanji: '明日', hiragana: 'あした', romaji: 'ashita', meaning: '明天', status: 'unseen' },
+                { id: 'noun_12', kanji: '昨日', hiragana: 'きのう', romaji: 'kinou', meaning: '昨天', status: 'unseen' },
+                { id: 'noun_13', kanji: '水', hiragana: 'みず', romaji: 'mizu', meaning: '水', status: 'unseen' },
+                { id: 'noun_14', kanji: '食べ物', hiragana: 'たべもの', romaji: 'tabemono', meaning: '食物', status: 'unseen' },
+                { id: 'noun_15', kanji: '電車', hiragana: 'でんしゃ', romaji: 'densha', meaning: '电车', status: 'unseen' },
+                { id: 'noun_16', kanji: '駅', hiragana: 'えき', romaji: 'eki', meaning: '车站', status: 'unseen' },
+                { id: 'noun_17', kanji: '店', hiragana: 'みせ', romaji: 'mise', meaning: '店', status: 'unseen' },
+                { id: 'noun_18', kanji: '本', hiragana: 'ほん', romaji: 'hon', meaning: '书', status: 'unseen' },
+                { id: 'noun_19', kanji: '車', hiragana: 'くるま', romaji: 'kuruma', meaning: '车', status: 'unseen' },
+                { id: 'noun_20', kanji: '道', hiragana: 'みち', romaji: 'michi', meaning: '路', status: 'unseen' },
+                { id: 'noun_21', kanji: '家族', hiragana: 'かぞく', romaji: 'kazoku', meaning: '家人', status: 'unseen' },
+                { id: 'noun_22', kanji: 'お金', hiragana: 'おかね', romaji: 'okane', meaning: '钱', status: 'unseen' },
+                { id: 'noun_23', kanji: '名前', hiragana: 'なまえ', romaji: 'namae', meaning: '名字', status: 'unseen' },
+                { id: 'noun_24', kanji: '犬', hiragana: 'いぬ', romaji: 'inu', meaning: '狗', status: 'unseen' },
+                { id: 'noun_25', kanji: '猫', hiragana: 'ねこ', romaji: 'neko', meaning: '猫', status: 'unseen' },
+                { id: 'noun_26', kanji: '目', hiragana: 'め', romaji: 'me', meaning: '眼睛', status: 'unseen' },
+                { id: 'noun_27', kanji: '口', hiragana: 'くち', romaji: 'kuchi', meaning: '嘴巴', status: 'unseen' },
+                { id: 'noun_28', kanji: '手', hiragana: 'て', romaji: 'te', meaning: '手', status: 'unseen' },
+                { id: 'noun_29', kanji: '足', hiragana: 'あし', romaji: 'ashi', meaning: '脚/腿', status: 'unseen' },
+                { id: 'noun_30', kanji: '机', hiragana: 'つくえ', romaji: 'tsukue', meaning: '桌子', status: 'unseen' },
+                { id: 'noun_31', kanji: '椅子', hiragana: 'いす', romaji: 'isu', meaning: '椅子', status: 'unseen' },
+                { id: 'noun_32', kanji: '手紙', hiragana: 'てがみ', romaji: 'tegami', meaning: '信', status: 'unseen' },
+                { id: 'noun_33', kanji: '電話', hiragana: 'でんわ', romaji: 'denwa', meaning: '电话', status: 'unseen' },
+                { id: 'noun_34', kanji: '映画', hiragana: 'えいが', romaji: 'eiga', meaning: '电影', status: 'unseen' },
+                { id: 'noun_35', kanji: '音楽', hiragana: 'おんがく', romaji: 'ongaku', meaning: '音乐', status: 'unseen' },
+                { id: 'noun_36', kanji: '病院', hiragana: 'びょういん', romaji: 'byouin', meaning: '医院', status: 'unseen' },
+                { id: 'noun_37', kanji: '公園', hiragana: 'こうえん', romaji: 'kouen', meaning: '公园', status: 'unseen' },
+                { id: 'noun_38', kanji: '買い物', hiragana: 'かいもの', romaji: 'kaimono', meaning: '购物', status: 'unseen' },
+                { id: 'noun_39', kanji: '荷物', hiragana: 'にもつ', romaji: 'nimotsu', meaning: '行李/包裹', status: 'unseen' },
+                { id: 'noun_40', kanji: '仕事', hiragana: 'しごと', romaji: 'shigoto', meaning: '工作/职业', status: 'unseen' },
+                { id: 'noun_41', kanji: '朝', hiragana: 'あさ', romaji: 'asa', meaning: '早上', status: 'unseen' },
+                { id: 'noun_42', kanji: '昼', hiragana: 'ひる', romaji: 'hiru', meaning: '中午', status: 'unseen' },
+                { id: 'noun_43', kanji: '晩', hiragana: 'ばん', romaji: 'ban', meaning: '晚上', status: 'unseen' },
+                { id: 'noun_44', kanji: '夜', hiragana: 'よる', romaji: 'yoru', meaning: '夜晚', status: 'unseen' },
+                { id: 'noun_45', kanji: '春', hiragana: 'はる', romaji: 'haru', meaning: '春天', status: 'unseen' },
+                { id: 'noun_46', kanji: '夏', hiragana: 'なつ', romaji: 'natsu', meaning: '夏天', status: 'unseen' },
+                { id: 'noun_47', kanji: '秋', hiragana: 'あき', romaji: 'aki', meaning: '秋天', status: 'unseen' },
+                { id: 'noun_48', kanji: '冬', hiragana: 'ふゆ', romaji: 'fuyu', meaning: '冬天', status: 'unseen' },
+                { id: 'noun_49', kanji: '雨', hiragana: 'あめ', romaji: 'ame', meaning: '雨', status: 'unseen' },
+                { id: 'noun_50', kanji: '雪', hiragana: 'ゆき', romaji: 'yuki', meaning: '雪', status: 'unseen' },
+                { id: 'noun_51', kanji: '風', hiragana: 'かぜ', romaji: 'kaze', meaning: '风', status: 'unseen' },
+                { id: 'noun_52', kanji: '空', hiragana: 'そら', romaji: 'sora', meaning: '天空', status: 'unseen' },
+                { id: 'noun_53', kanji: '海', hiragana: 'うみ', romaji: 'umi', meaning: '海', status: 'unseen' },
+                { id: 'noun_54', kanji: '山', hiragana: 'やま', romaji: 'yama', meaning: '山', status: 'unseen' },
+                { id: 'noun_55', kanji: '川', hiragana: 'かわ', romaji: 'kawa', meaning: '河', status: 'unseen' },
+                { id: 'noun_56', kanji: '花', hiragana: 'はな', romaji: 'hana', meaning: '花', status: 'unseen' },
+                { id: 'noun_57', kanji: '木', hiragana: 'き', romaji: 'ki', meaning: '树木', status: 'unseen' },
+                { id: 'noun_58', kanji: '動物', hiragana: 'どうぶつ', romaji: 'doubutsu', meaning: '动物', status: 'unseen' },
+                { id: 'noun_59', kanji: '鳥', hiragana: 'とり', romaji: 'tori', meaning: '鸟', status: 'unseen' },
+                { id: 'noun_60', kanji: '魚', hiragana: 'さかな', romaji: 'sakana', meaning: '鱼', status: 'unseen' },
+                { id: 'noun_61', kanji: 'ご飯', hiragana: 'ごはん', romaji: 'gohan', meaning: '米饭/饭', status: 'unseen' },
+                { id: 'noun_62', kanji: 'パン', hiragana: 'ぱん', romaji: 'pan', meaning: '面包', status: 'unseen' },
+                { id: 'noun_63', kanji: '肉', hiragana: 'にく', romaji: 'niku', meaning: '肉', status: 'unseen' },
+                { id: 'noun_64', kanji: '野菜', hiragana: 'やさい', romaji: 'yasai', meaning: '蔬菜', status: 'unseen' },
+                { id: 'noun_65', kanji: '果物', hiragana: 'くだもの', romaji: 'kudamono', meaning: '水果', status: 'unseen' },
+                { id: 'noun_66', kanji: 'りんご', hiragana: 'りんご', romaji: 'ringo', meaning: '苹果', status: 'unseen' },
+                { id: 'noun_67', kanji: 'みかん', hiragana: 'みかん', romaji: 'mikan', meaning: '橘子', status: 'unseen' },
+                { id: 'noun_68', kanji: 'お茶', hiragana: 'おちゃ', romaji: 'ocha', meaning: '茶', status: 'unseen' },
+                { id: 'noun_69', kanji: 'コーヒー', hiragana: 'こーひー', romaji: 'koohii', meaning: '咖啡', status: 'unseen' },
+                { id: 'noun_70', kanji: '砂糖', hiragana: 'さとう', romaji: 'satou', meaning: '糖', status: 'unseen' },
+                { id: 'noun_71', kanji: '塩', hiragana: 'しお', romaji: 'shio', meaning: '盐', status: 'unseen' },
+                { id: 'noun_72', kanji: '醤油', hiragana: 'しょうゆ', romaji: 'shouyu', meaning: '酱油', status: 'unseen' },
+                { id: 'noun_73', kanji: '服', hiragana: 'ふく', romaji: 'fuku', meaning: '衣服', status: 'unseen' },
+                { id: 'noun_74', kanji: '靴', hiragana: 'くつ', romaji: 'kutsu', meaning: '鞋', status: 'unseen' },
+                { id: 'noun_75', kanji: '帽子', hiragana: 'ぼうし', romaji: 'boushi', meaning: '帽子', status: 'unseen' },
+                { id: 'noun_76', kanji: '傘', hiragana: 'かさ', romaji: 'kasa', meaning: '伞', status: 'unseen' },
+                { id: 'noun_77', kanji: '財布', hiragana: 'さいふ', romaji: 'saifu', meaning: '钱包', status: 'unseen' },
+                { id: 'noun_78', kanji: '時計', hiragana: 'とけい', romaji: 'tokei', meaning: '钟表', status: 'unseen' },
+                { id: 'noun_79', kanji: '眼鏡', hiragana: 'めがね', romaji: 'megane', meaning: '眼镜', status: 'unseen' },
+                { id: 'noun_80', kanji: '鉛筆', hiragana: 'えんぴつ', romaji: 'enpitsu', meaning: '铅笔', status: 'unseen' },
+                { id: 'noun_81', kanji: 'ペン', hiragana: 'ぺん', romaji: 'pen', meaning: '钢笔/笔', status: 'unseen' },
+                { id: 'noun_82', kanji: '辞書', hiragana: 'じしょ', romaji: 'jisho', meaning: '词典', status: 'unseen' },
+                { id: 'noun_83', kanji: '雑誌', hiragana: 'ざっし', romaji: 'zasshi', meaning: '杂志', status: 'unseen' },
+                { id: 'noun_84', kanji: '新聞', hiragana: 'しんぶん', romaji: 'shinbun', meaning: '报纸', status: 'unseen' },
+                { id: 'noun_85', kanji: '手帳', hiragana: 'てちょう', romaji: 'techou', meaning: '记事本', status: 'unseen' },
+                { id: 'noun_86', kanji: '右', hiragana: 'みぎ', romaji: 'migi', meaning: '右边', status: 'unseen' },
+                { id: 'noun_87', kanji: '左', hiragana: 'ひだり', romaji: 'hidari', meaning: '左边', status: 'unseen' },
+                { id: 'noun_88', kanji: '前', hiragana: 'まえ', romaji: 'mae', meaning: '前面', status: 'unseen' },
+                { id: 'noun_89', kanji: '後ろ', hiragana: 'うしろ', romaji: 'ushiro', meaning: '后面', status: 'unseen' },
+                { id: 'noun_90', kanji: '上', hiragana: 'うえ', romaji: 'ue', meaning: '上面', status: 'unseen' },
+                { id: 'noun_91', kanji: '下', hiragana: 'した', romaji: 'shita', meaning: '下面', status: 'unseen' },
+                { id: 'noun_92', kanji: '中', hiragana: 'なか', romaji: 'naka', meaning: '中间/里面', status: 'unseen' },
+                { id: 'noun_93', kanji: '外', hiragana: 'そと', romaji: 'soto', meaning: '外面', status: 'unseen' },
+                { id: 'noun_94', kanji: '隣', hiragana: 'となり', romaji: 'tonari', meaning: '旁边', status: 'unseen' },
+                { id: 'noun_95', kanji: '近く', hiragana: 'ちかく', romaji: 'chikaku', meaning: '附近', status: 'unseen' }
+            ]
+        };
+
+        // --- Core Engine ---
+        let localDB = JSON.parse(localStorage.getItem('jpnFlashcardDB'));
+        let database = JSON.parse(JSON.stringify(defaultData)); 
+        
+        if (localDB) {
+            for (const deck in localDB) {
+                if (!database[deck]) {
+                    database[deck] = localDB[deck]; 
+                } else {
+                    const defaultIds = new Set(database[deck].map(c => c.id));
+                    localDB[deck].forEach(localCard => {
+                        if (defaultIds.has(localCard.id)) {
+                            database[deck].find(c => c.id === localCard.id).status = localCard.status;
+                        } else {
+                            database[deck].push(localCard);
+                        }
+                    });
+                }
+            }
+        }
+
+        let selectedDecks = JSON.parse(localStorage.getItem('jpnSelectedDecks')) || Object.keys(database);
+        
+        let activePool = [];
+        let currentCardIndex = 0;
+        let isQuizMode = false;
+        let isFlipped = false;
+        let isAnimating = false;
+
+        function saveData() {
+            localStorage.setItem('jpnFlashcardDB', JSON.stringify(database));
+            localStorage.setItem('jpnSelectedDecks', JSON.stringify(selectedDecks));
+        }
+
+        // --- View Controller ---
+        function switchView(view) {
+            document.getElementById('tab-study').classList.toggle('active', view === 'study');
+            document.getElementById('tab-list').classList.toggle('active', view === 'list');
+            document.getElementById('app-study').style.display = view === 'study' ? 'flex' : 'none';
+            document.getElementById('app-list').classList.toggle('active', view === 'list');
+            if(view === 'list') renderList();
+        }
+
+        // --- Dashboard & Initialization ---
+        function applySettings() {
+            // Update Deck Selection
+            selectedDecks = Array.from(document.querySelectorAll('.deck-label input:checked')).map(cb => cb.value);
+            saveData();
+            
+            let pool = [];
+            selectedDecks.forEach(deckName => {
+                if(database[deckName]) pool = pool.concat(database[deckName]);
+            });
+            
+            let reviewCards = pool.filter(c => c.status === 'review');
+            let unseenCards = pool.filter(c => c.status === 'unseen');
+            let masteredCards = pool.filter(c => c.status === 'mastered');
+            
+            const shuffle = arr => {
+                for (let i = arr.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+            };
+            shuffle(reviewCards);
+            shuffle(unseenCards);
+            shuffle(masteredCards);
+            
+            let limitStr = document.getElementById('session-limit').value;
+            let hasLimit = limitStr && parseInt(limitStr) > 0;
+            let limit = hasLimit ? parseInt(limitStr) : reviewCards.length + unseenCards.length;
+            
+            // Include up to 25% mastered cards for testing retention
+            let numMastered = Math.min(masteredCards.length, Math.max(1, Math.floor(limit * 0.25)));
+            if (reviewCards.length + unseenCards.length === 0) {
+                numMastered = hasLimit ? limit : Math.min(masteredCards.length, 20);
+            }
+            let selectedMastered = masteredCards.slice(0, numMastered);
+            
+            let numLearning = limit - selectedMastered.length;
+            let learningCards = reviewCards.concat(unseenCards).slice(0, numLearning);
+            
+            activePool = selectedMastered.concat(learningCards);
+            shuffle(activePool);
+
+            // Initialize session tracking
+            activePool.forEach(c => c.sessionMastered = false);
+
+            currentCardIndex = 0;
+            updateStats();
+            renderCard();
+            
+            // Force switch to study view if clicking compile
+            switchView('study');
+        }
+
+        function renderDeckSelector() {
+            const container = document.getElementById('deck-selector');
+            container.innerHTML = '';
+            Object.keys(database).forEach(deckName => {
+                const isChecked = selectedDecks.includes(deckName);
+                const label = document.createElement('label');
+                label.className = 'deck-label';
+                label.innerHTML = `<input type="checkbox" value="${deckName}" ${isChecked ? 'checked' : ''}> ${deckName}`;
+                container.appendChild(label);
+            });
+        }
+
+        // --- Flashcard Logic ---
+        function updateStats() {
+            const leftCount = activePool.filter(c => !c.sessionMastered).length;
+            document.getElementById('stat-unseen').textContent = `${leftCount} Left`;
+        }
+
+        function setMode(mode) {
+            isQuizMode = (mode === 'quiz');
+            document.getElementById('btn-seq').classList.toggle('active', !isQuizMode);
+            document.getElementById('btn-quiz').classList.toggle('active', isQuizMode);
+            nextCard();
+        }
+
+        function renderCard() {
+            const cardEl = document.getElementById('flashcard');
+            
+            let unmastered = activePool.filter(c => !c.sessionMastered);
+
+            if (unmastered.length === 0 || activePool.length === 0) {
+                document.getElementById('front-text').innerHTML = "All Done! 🎉<br><span style='font-size: 1.2rem; color: var(--text-secondary);'>Session Mastered</span>";
+                document.getElementById('back-hiragana').textContent = "";
+                document.getElementById('back-romaji').textContent = "";
+                document.getElementById('back-meaning').textContent = "";
+                
+                isFlipped = false;
+                draggedX = 0;
+                cardEl.style.transition = 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                cardEl.style.transform = ''; 
+                cardEl.classList.remove('is-flipped');
+                document.getElementById('eval-controls').classList.remove('visible');
+                
+                let testBadge = document.getElementById('test-badge');
+                if (testBadge) testBadge.style.display = 'none';
+                return;
+            }
+
+            const card = activePool[currentCardIndex];
+            document.getElementById('front-text').textContent = card.kanji;
+            document.getElementById('back-hiragana').textContent = card.hiragana;
+            document.getElementById('back-romaji').textContent = card.romaji;
+            document.getElementById('back-meaning').textContent = card.meaning;
+
+            let testBadge = document.getElementById('test-badge');
+            if (!testBadge) {
+                testBadge = document.createElement('div');
+                testBadge.id = 'test-badge';
+                testBadge.style.cssText = `
+                    position: absolute;
+                    top: 16px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    color: white;
+                    padding: 4px 12px;
+                    border-radius: 99px;
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    letter-spacing: 0.5px;
+                    text-transform: uppercase;
+                `;
+                document.querySelector('.card-front').appendChild(testBadge);
+            }
+            
+            if (card.status === 'mastered') {
+                testBadge.textContent = 'Mastery Test';
+                testBadge.style.background = 'var(--accent-blue)';
+                testBadge.style.boxShadow = '0 2px 8px rgba(24, 119, 242, 0.3)';
+                testBadge.style.display = 'block';
+            } else if (card.status === 'review') {
+                testBadge.textContent = 'Review';
+                testBadge.style.background = 'var(--btn-red)';
+                testBadge.style.boxShadow = '0 2px 8px rgba(255, 75, 75, 0.3)';
+                testBadge.style.display = 'block';
+            } else {
+                testBadge.style.display = 'none';
+            }
+            
+            isFlipped = false;
+            draggedX = 0;
+            cardEl.style.transition = 'none';
+            cardEl.style.transform = ''; // reset position completely
+            cardEl.classList.remove('is-flipped');
+            
+            // Re-enable smooth transitions slightly after reset
+            setTimeout(() => {
+                cardEl.style.transition = 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            }, 20);
+
+            document.getElementById('eval-controls').classList.remove('visible');
+        }
+
+        // Drag tracking variable so click doesn't trigger if we dragged
+        let draggedX = 0; 
+
+        document.getElementById('card-container').addEventListener('click', (e) => {
+            if(Math.abs(draggedX) > 10) return; // Ignore click if we swiped
+            if(activePool.length === 0 || isAnimating) return;
+            
+            isFlipped = !isFlipped;
+            document.getElementById('flashcard').classList.toggle('is-flipped');
+            document.getElementById('eval-controls').classList.toggle('visible', isFlipped);
+        });
+
+        function markCard(status, event) {
+            if (event) event.stopPropagation();
+            if (!isFlipped || activePool.length === 0 || isAnimating) return;
+            
+            const card = activePool[currentCardIndex];
+            for (const deck in database) {
+                const dbCard = database[deck].find(c => c.id === card.id);
+                if (dbCard) dbCard.status = status;
+            }
+            
+            card.status = status;
+            card.sessionMastered = (status === 'mastered');
+            saveData();
+            updateStats();
+            nextCard();
+        }
+
+        function nextCard() {
+            if (activePool.length === 0) return;
+
+            let unmastered = activePool.filter(c => !c.sessionMastered);
+            if (unmastered.length === 0) {
+                renderCard();
+                return;
+            }
+
+            if (isQuizMode) {
+                const randomTarget = unmastered[Math.floor(Math.random() * unmastered.length)];
+                currentCardIndex = activePool.findIndex(c => c.id === randomTarget.id);
+            } else {
+                let nextIndex = (currentCardIndex + 1) % activePool.length;
+                while (activePool[nextIndex].sessionMastered) {
+                    nextIndex = (nextIndex + 1) % activePool.length;
+                }
+                currentCardIndex = nextIndex;
+            }
+            renderCard();
+        }
+
+        // --- Swipe Logistics ---
+        const container = document.getElementById('card-container');
+        const flashcardEl = document.getElementById('flashcard');
+        
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker registered', reg))
+                    .catch(err => console.error('Service Worker registration failed', err));
+            });
+        }
+        
+        let startX = 0, currentX = 0, isDragging = false;
+
+        container.addEventListener('pointerdown', e => {
+            draggedX = 0;
+            if (!isFlipped || isAnimating || activePool.length === 0) return;
+            isDragging = true;
+            startX = e.clientX;
+            flashcardEl.style.transition = 'none';
+            container.setPointerCapture(e.pointerId);
+        });
+
+        container.addEventListener('pointermove', e => {
+            if (!isDragging) return;
+            currentX = e.clientX - startX;
+            draggedX = currentX;
+            const rotate = currentX * 0.05;
+            flashcardEl.style.transform = `rotateY(180deg) translate(${-currentX}px, 0) rotateZ(${rotate}deg)`;
+        });
+
+        container.addEventListener('pointerup', e => {
+            if (!isDragging) return;
+            isDragging = false;
+            container.releasePointerCapture(e.pointerId);
+            
+            if (Math.abs(currentX) > 120) { // Threshold for marking
+                isAnimating = true;
+                const direction = currentX > 0 ? 1 : -1;
+                flashcardEl.style.transition = 'transform 0.3s ease-out';
+                flashcardEl.style.transform = `rotateY(180deg) translate(${-direction * window.innerWidth}px, 0) rotateZ(${direction * 30}deg)`;
+                
+                setTimeout(() => {
+                    isAnimating = false;
+                    markCard(direction > 0 ? 'mastered' : 'review');
+                }, 300);
+            } else {
+                // Snap back if threshold not met
+                flashcardEl.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                flashcardEl.style.transform = `rotateY(180deg)`;
+            }
+            currentX = 0;
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT') return;
+            if (event.code === 'Space' || event.code === 'ArrowUp' || event.code === 'ArrowDown') {
+                event.preventDefault();
+                if(Math.abs(draggedX) < 10) {
+                    isFlipped = !isFlipped;
+                    flashcardEl.classList.toggle('is-flipped');
+                    document.getElementById('eval-controls').classList.toggle('visible', isFlipped);
+                }
+            } else if (event.code === 'ArrowRight' && isFlipped) {
+                markCard('mastered');
+            } else if (event.code === 'ArrowLeft' && isFlipped) {
+                markCard('review');
+            }
+        });
+
+        // --- List Revision Logic ---
+        let currentListFilter = 'all';
+
+        function toggleDropdown(event) {
+            if(event) event.stopPropagation();
+            document.getElementById('list-filter-dropdown').classList.toggle('active');
+        }
+
+        function selectFilter(value, text, el) {
+            if (event) event.stopPropagation();
+            currentListFilter = value;
+            document.getElementById('list-filter-selected').textContent = text;
+            document.querySelectorAll('#list-filter-options .dropdown-option').forEach(opt => opt.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('list-filter-dropdown').classList.remove('active');
+            renderList();
+        }
+
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('list-filter-dropdown');
+            if (dropdown && !dropdown.contains(e.target)) dropdown.classList.remove('active');
+        });
+
+        function renderList() {
+            const container = document.getElementById('list-items-container');
+            const filter = currentListFilter;
+            container.innerHTML = '';
+
+            let listPool = [];
+            selectedDecks.forEach(deckName => {
+                if(database[deckName]) listPool = listPool.concat(database[deckName]);
+            });
+
+            if (filter !== 'all') {
+                listPool = listPool.filter(c => c.status === filter);
+            }
+
+            listPool.forEach(card => {
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                
+                let badgeClass = card.status === 'unseen' ? 'unseen' : (card.status === 'review' ? 'review' : 'mastered');
+                
+                item.innerHTML = `
+                    <div class="list-info">
+                        <span class="list-kanji">${card.kanji} <span style="font-size: 0.9rem; font-weight:normal;">(${card.hiragana})</span></span>
+                        <span class="list-meaning">${card.meaning}</span>
+                    </div>
+                    <div class="list-actions">
+                        <span class="badge ${badgeClass}">${card.status}</span>
+                        <button class="btn-reset" onclick="resetCardStatus('${card.id}')">↻ Reset</button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function resetCardStatus(cardId) {
+            for (const deck in database) {
+                const dbCard = database[deck].find(c => c.id === cardId);
+                if (dbCard) dbCard.status = 'unseen';
+            }
+            saveData();
+            renderList(); // Re-render the list immediately
+            
+            // Sync with active pool if studying
+            const activeCard = activePool.find(c => c.id === cardId);
+            if(activeCard) activeCard.status = 'unseen';
+            updateStats();
+        }
+
+        // Init App
+        renderDeckSelector();
+        applySettings(); // Compiles pool and sets up initial card
+    </script>
+</body>
+</html>
