@@ -215,6 +215,52 @@
             touch-action: none; /* Prevent scroll while swiping */
         }
         
+        body.card-fullscreen-mode .nav-tabs,
+        body.card-fullscreen-mode .dashboard,
+        body.card-fullscreen-mode .header,
+        body.card-fullscreen-mode .keyboard-hints {
+            display: none !important;
+        }
+
+        body.card-fullscreen-mode .app-core {
+            max-width: 100%;
+            height: 100vh;
+            justify-content: center;
+        }
+
+        body.card-fullscreen-mode .flashcard-container {
+            max-height: 85vh;
+            max-width: 68vh;
+            width: 100%;
+            margin-bottom: 0;
+        }
+
+        .fullscreen-icon {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 12px;
+            color: var(--text-secondary);
+            padding: 8px;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        .fullscreen-icon:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        body.card-fullscreen-mode .fullscreen-icon { top: 24px; right: 24px; }
+        body.card-fullscreen-mode .flashcard { margin: auto; }
+        
         .flashcard {
             width: 100%;
             height: 100%;
@@ -466,6 +512,11 @@
         </div>
 
         <div class="flashcard-container" id="card-container">
+            <button class="fullscreen-icon" onclick="toggleCardFullscreen(event)" aria-label="Fullscreen Card">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                </svg>
+            </button>
             <div class="flashcard" id="flashcard">
                 <div class="card-face card-front">
                     <div class="kanji" id="front-text">...</div>
@@ -1137,6 +1188,64 @@
             } else if (event.code === 'ArrowLeft' && isFlipped) {
                 markCard('review');
             }
+        });
+
+        // --- Full Screen Features ---
+        function toggleFullScreen(element) {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (element.requestFullscreen) {
+                    element.requestFullscreen();
+                } else if (element.webkitRequestFullscreen) {
+                    element.webkitRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+            }
+        }
+
+        function toggleCardFullscreen(event) {
+            event.stopPropagation();
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                document.body.classList.add('card-fullscreen-mode');
+                toggleFullScreen(document.documentElement);
+            } else {
+                toggleFullScreen(document.documentElement);
+            }
+        }
+
+        const handleFullscreenChange = () => {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                document.body.classList.remove('card-fullscreen-mode');
+            }
+        };
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+
+        let lastTapTime = 0;
+        document.addEventListener('touchend', function(e) {
+            const tagName = e.target.tagName.toLowerCase();
+            if (['button', 'input', 'select'].includes(tagName) || e.target.closest('.eval-controls') || e.target.closest('.fullscreen-icon')) {
+                return;
+            }
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTapTime;
+            if (tapLength < 300 && tapLength > 0) {
+                toggleFullScreen(document.documentElement);
+                e.preventDefault();
+            }
+            lastTapTime = currentTime;
+        }, { passive: false });
+
+        document.addEventListener('dblclick', function(e) {
+            const tagName = e.target.tagName.toLowerCase();
+            if (['button', 'input', 'select'].includes(tagName) || e.target.closest('.eval-controls') || e.target.closest('.fullscreen-icon')) {
+                return;
+            }
+            toggleFullScreen(document.documentElement);
         });
 
         // --- List Revision Logic ---
