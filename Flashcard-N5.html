@@ -210,7 +210,7 @@
             perspective: 1200px;
             width: 100%;
             aspect-ratio: 4/5;
-            max-height: 450px;
+            max-height: 55vh;
             margin-bottom: 32px;
             touch-action: none; /* Prevent scroll while swiping */
         }
@@ -438,7 +438,12 @@
         <div class="deck-selector" id="deck-selector"></div>
         <div class="settings-row">
             <input type="number" id="session-limit" placeholder="Limit session (e.g. 20)">
-            <button class="small-btn" onclick="applySettings()">Compile Deck</button>
+            <select id="ui-scale" onchange="changeUIScale()" style="flex: 0.8">
+                <option value="0.8">Small</option>
+                <option value="1.0" selected>Normal</option>
+                <option value="1.2">Large</option>
+            </select>
+            <button class="small-btn" onclick="applySettings(true)">Compile</button>
         </div>
         <div class="settings-row" style="margin-top: 8px;">
             <button class="small-btn secondary-btn" style="flex: 1;" onclick="exportData()">Export Data</button>
@@ -772,6 +777,19 @@
 
         let selectedDecks = JSON.parse(localStorage.getItem('jpnSelectedDecks')) || Object.keys(database);
         
+        let savedScale = localStorage.getItem('jpnUIScale') || "1.0";
+        document.documentElement.style.fontSize = (16 * parseFloat(savedScale)) + 'px';
+        window.addEventListener('DOMContentLoaded', () => {
+            const scaleSelect = document.getElementById('ui-scale');
+            if (scaleSelect) scaleSelect.value = savedScale;
+        });
+
+        function changeUIScale() {
+            const scale = document.getElementById('ui-scale').value;
+            document.documentElement.style.fontSize = (16 * parseFloat(scale)) + 'px';
+            localStorage.setItem('jpnUIScale', scale);
+        }
+        
         let activePool = [];
         let currentCardIndex = 0;
         let isQuizMode = false;
@@ -831,7 +849,7 @@
         }
 
         // --- Dashboard & Initialization ---
-        function applySettings() {
+        function applySettings(forceStudyView = true) {
             // Update Deck Selection
             selectedDecks = Array.from(document.querySelectorAll('.deck-label input:checked')).map(cb => cb.value);
             saveData();
@@ -890,7 +908,11 @@
             renderCard();
             
             // Force switch to study view if clicking compile
-            switchView('study');
+            if (forceStudyView) {
+                switchView('study');
+            } else if (document.getElementById('tab-list').classList.contains('active')) {
+                renderList();
+            }
         }
 
         function renderDeckSelector() {
@@ -900,7 +922,7 @@
                 const isChecked = selectedDecks.includes(deckName);
                 const label = document.createElement('label');
                 label.className = 'deck-label';
-                label.innerHTML = `<input type="checkbox" value="${deckName}" ${isChecked ? 'checked' : ''}> ${deckName}`;
+                label.innerHTML = `<input type="checkbox" value="${deckName}" ${isChecked ? 'checked' : ''} onchange="applySettings(false)"> ${deckName}`;
                 container.appendChild(label);
             });
         }
@@ -1190,7 +1212,7 @@
 
         // Init App
         renderDeckSelector();
-        applySettings(); // Compiles pool and sets up initial card
+        applySettings(false); // Compiles pool and sets up initial card
     </script>
 </body>
 </html>
