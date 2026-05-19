@@ -1,175 +1,691 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#ffffff" id="meta-theme-color">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icon.svg">
-    <title>Pro Japanese Flashcards</title>
+    <title>StudyFlow Pro</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');
+
+        /* --- Premium Dynamic Theming Engine --- */
         :root {
-            --bg-color: #f0f2f5;
-            --text-main: #1c1e21;
-            --text-secondary: #65676b;
-            --border-color: #dadde1;
-            --accent-blue: #1877f2;
-            --card-bg: #ffffff;
-            --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.08);
-            --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.12);
-            --btn-red: #ff4b4b;
-            --btn-green: #00c370;
-            --btn-yellow: #f5a623;
+            /* Light Theme (Glassmorphism & Vibrant) */
+            --bg-color: #f8fafc;
+            --bg-gradient: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 50%, #fce7f3 100%);
+            --text-main: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: rgba(255, 255, 255, 0.6);
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --card-border: rgba(255, 255, 255, 0.9);
+            
+            --accent-color: #6366f1;
+            --accent-gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --accent-text: #ffffff;
+
+            --shadow-soft: 0 10px 40px -10px rgba(99, 102, 241, 0.15);
+            --shadow-hover: 0 20px 40px -10px rgba(99, 102, 241, 0.3);
+
+            --btn-red: #f43f5e;
+            --btn-green: #10b981;
+            --btn-yellow: #f59e0b;
+        }
+
+        body.dark-theme {
+            /* Dark Theme (Sleek Dark Glass) */
+            --bg-color: #0f172a;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #31113b 100%);
+            --text-main: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --card-bg: rgba(30, 41, 59, 0.45);
+            --card-border: rgba(255, 255, 255, 0.12);
+
+            --accent-color: #818cf8;
+            --accent-gradient: linear-gradient(135deg, #818cf8, #a78bfa);
+            --accent-text: #ffffff;
+
+            --shadow-soft: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+            --shadow-hover: 0 20px 40px -10px rgba(0, 0, 0, 0.7);
+
+            --btn-red: #e11d48;
+            --btn-green: #059669;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg-gradient);
+            background-size: 200% 200%;
+            animation: bgMesh 15s ease infinite;
             color: var(--text-main);
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            transition: color 0.5s ease;
+        }
+
+        @keyframes bgMesh {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow-soft);
+        }
+
+        /* Quiz Buttons */
+        .quiz-options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            margin-top: 24px;
+        }
+
+        .quiz-btn {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(4px);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 16px 20px;
+            border-radius: 16px;
+            font-size: 1.05rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .quiz-btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            background: var(--border-color);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .quiz-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+
+        .quiz-btn.correct {
+            background: var(--btn-green) !important;
+            color: white !important;
+            border-color: var(--btn-green) !important;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4) !important;
+            transform: scale(1.05) !important;
+            z-index: 10;
+        }
+
+        .quiz-btn.wrong {
+            background: var(--btn-red) !important;
+            color: white !important;
+            border-color: var(--btn-red) !important;
+            opacity: 0.8;
+            transform: scale(0.95) !important;
+        }
+
+        /* --- Master Layout System --- */
+        .app-layout {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .sidebar {
+            width: 300px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 32px 20px;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            overflow-y: auto;
+            transition: margin-left 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 10px 0 30px rgba(0,0,0,0.03);
+        }
+
+        .sidebar.collapsed {
+            margin-left: -300px;
+        }
+
+        .sidebar-header {
+            margin-bottom: 32px;
+            padding: 0 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--text-main);
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sidebar-close-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        .sidebar-close-btn:hover {
+            background: rgba(0,0,0,0.05);
+            color: var(--text-main);
+            transform: rotate(90deg);
+        }
+
+        .sidebar-section-title {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            padding: 0 8px;
+        }
+
+        .sidebar-deck-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .sidebar-deck-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 0.95rem;
+            user-select: none;
+            border: 1px solid transparent;
+        }
+
+        .sidebar-deck-label:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: var(--border-color);
+            transform: translateX(4px);
+        }
+
+        .sidebar-deck-label.active {
+            background: var(--accent-gradient);
+            color: #ffffff;
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+            transform: translateX(8px);
+        }
+
+        .deck-name-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 180px;
+        }
+
+        .main-content {
+            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
+            padding: 24px;
             box-sizing: border-box;
-            -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
+            min-width: 0;
+            height: 100vh;
+            overflow-y: auto;
         }
 
-        /* --- Navigation --- */
+        /* --- Navigation & Settings --- */
+        .top-bar {
+            display: flex;
+            gap: 16px;
+            width: 100%;
+            max-width: 540px;
+            margin-bottom: 40px;
+            align-items: center;
+        }
+
         .nav-tabs {
             display: flex;
-            background: #e4e6eb;
-            padding: 4px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            padding: 6px;
             border-radius: 99px;
-            margin-bottom: 24px;
-            width: 100%;
-            max-width: 300px;
+            flex: 1;
+            min-width: 0;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            overflow-x: auto;
+            white-space: nowrap;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .nav-tabs::-webkit-scrollbar {
+            display: none;
         }
 
         .nav-tab {
-            flex: 1;
+            flex: 1 0 auto;
             text-align: center;
-            padding: 10px 0;
+            padding: 12px 16px;
             border-radius: 99px;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             font-weight: 700;
             cursor: pointer;
             color: var(--text-secondary);
-            transition: 0.2s;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             user-select: none;
         }
 
         .nav-tab.active {
             background: var(--card-bg);
+            color: var(--accent-color);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            transform: scale(1.05);
+        }
+
+        .icon-btn {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
             color: var(--text-main);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-soft);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            flex-shrink: 0;
+        }
+
+        .icon-btn:hover {
+            transform: translateY(-3px) rotate(15deg);
+            box-shadow: var(--shadow-hover);
+            color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        
+        .icon-btn:active {
+            transform: translateY(0) scale(0.95);
+        }
+
+        .menu-btn {
+            display: flex;
+        }
+
+        /* --- Responsive Breakpoints --- */
+        @media (max-width: 800px) {
+            .sidebar {
+                position: fixed;
+                left: -300px;
+                margin-left: 0 !important;
+                z-index: 1001;
+                transition: left 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+
+            .sidebar.open {
+                left: 0;
+                box-shadow: 20px 0 50px rgba(0,0,0,0.2);
+            }
+
+            .menu-btn {
+                display: flex;
+            }
+
+            .sidebar-overlay.show {
+                opacity: 1;
+                pointer-events: all;
+            }
+
+            .sidebar-close-btn {
+                display: block;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .top-bar {
+                flex-wrap: wrap;
+                justify-content: space-between;
+                gap: 12px;
+                margin-bottom: 24px;
+            }
+            .nav-tabs {
+                order: 3;
+                width: 100%;
+                flex: 0 0 100%;
+                box-sizing: border-box;
+            }
+            .nav-tab {
+                padding: 10px 4px;
+                font-size: 0.85rem;
+            }
+            .icon-btn {
+                width: 44px;
+                height: 44px;
+            }
+            .main-content {
+                padding: 16px;
+            }
+            .dashboard-hero {
+                padding: 32px 20px;
+            }
         }
 
         /* --- Dashboard --- */
         .dashboard {
             width: 100%;
-            max-width: 420px;
+            max-width: 460px;
             margin-bottom: 24px;
+            text-align: center;
+            animation: slideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .deck-selector {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 12px;
-            justify-content: center;
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .deck-label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
+        .dashboard-hero {
             background: var(--card-bg);
-            padding: 8px 16px;
-            border-radius: 99px;
-            border: 1px solid var(--border-color);
-            user-select: none;
-            transition: all 0.2s ease;
-            color: var(--text-secondary);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 32px;
+            padding: 48px 32px;
+            margin-bottom: 32px;
+            box-shadow: var(--shadow-hover);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dashboard-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+            opacity: 0.5;
+            pointer-events: none;
         }
 
-        .deck-label:has(input:checked) {
-            border-color: var(--text-main);
+        .dashboard-hero h2 {
+            margin: 0 0 12px 0;
             color: var(--text-main);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
         }
 
-        .deck-label input { display: none; }
-
-        .settings-row {
-            display: flex;
-            gap: 12px;
-            margin-top: 16px;
-            align-items: center;
+        .dashboard-hero p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            line-height: 1.6;
         }
 
-        input[type="number"], input[type="text"], select {
-            padding: 12px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            font-size: 0.9rem;
-            flex: 1;
-            background: var(--card-bg);
+        .btn-start-session {
+            background: var(--accent-gradient);
+            color: var(--accent-text);
+            width: 100%;
+            padding: 20px;
+            font-size: 1.15rem;
+            border-radius: 20px;
+            border: none;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 12px 30px rgba(99, 102, 241, 0.3);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .btn-start-session:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 40px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-start-session:active {
+            transform: translateY(2px) scale(0.98);
+        }
+
+        /* --- Standard Inputs & Buttons --- */
+        input[type="number"],
+        input[type="text"],
+        select,
+        textarea {
+            padding: 14px 18px;
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            font-size: 0.95rem;
+            font-family: 'Outfit', sans-serif;
+            background: rgba(255,255,255,0.2);
+            color: var(--text-main);
             outline: none;
-            transition: border-color 0.2s;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-sizing: border-box;
         }
 
         select {
             appearance: none;
             -webkit-appearance: none;
-            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2365676b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236366f1%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
             background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 10px auto;
-            padding-right: 32px;
+            background-position: right 16px center;
+            background-size: 12px auto;
+            padding-right: 40px;
             cursor: pointer;
-            color: var(--text-main);
             font-weight: 600;
         }
 
-        input:focus, select:focus { border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.1); }
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--accent-color);
+            background: rgba(255,255,255,0.5);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
 
         button.small-btn {
-            padding: 12px 20px;
-            background: var(--text-main);
-            color: white;
+            padding: 14px 24px;
+            background: var(--accent-gradient);
+            color: var(--accent-text);
             border: none;
-            border-radius: 12px;
+            border-radius: 16px;
             cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: opacity 0.2s;
+            font-size: 0.95rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
         }
 
-        button.small-btn:hover { opacity: 0.8; }
+        button.small-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+        }
 
         button.secondary-btn {
-            background: var(--card-bg);
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
             color: var(--text-main);
-            border: 1px solid var(--border-color);
+            border: 2px solid var(--border-color);
+            box-shadow: none;
         }
 
         button.secondary-btn:hover {
-            background: #e4e6eb;
+            background: rgba(255,255,255,0.4);
+            border-color: var(--text-main);
+            box-shadow: var(--shadow-soft);
+        }
+
+        /* --- Settings Modal --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            display: flex;
             opacity: 1;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 32px;
+            width: 90%;
+            max-width: 420px;
+            padding: 32px;
+            box-shadow: 0 24px 48px rgba(0,0,0,0.2);
+            transform: translateY(40px) scale(0.95);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid var(--card-border);
+        }
+
+        .modal-overlay.show .modal-content {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 24px;
+            color: var(--text-main);
+        }
+
+        .close-modal {
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 8px;
+            border-radius: 50%;
+            display: flex;
+            background: rgba(255,255,255,0.2);
+            transition: all 0.2s;
+        }
+
+        .close-modal:hover {
+            background: var(--btn-red);
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .settings-section {
+            margin-bottom: 28px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .settings-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .settings-label {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            display: block;
+            letter-spacing: 1px;
+        }
+
+        .color-swatches {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .color-swatch {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .color-swatch:hover {
+            transform: translateY(-4px) scale(1.1);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        .color-swatch:active {
+            transform: scale(0.9);
+        }
+
+        .color-swatch.active {
+            border-color: var(--text-main);
+            transform: scale(1.1);
         }
 
         /* --- Study App Core --- */
         .app-core {
             width: 100%;
-            max-width: 360px;
+            max-width: 460px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            animation: slideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .header {
@@ -180,101 +696,147 @@
             margin-bottom: 24px;
         }
 
-        .stats { display: flex; gap: 6px; align-items: center; }
-        .stat-dot { width: 8px; height: 8px; border-radius: 50%; }
-        .stat-text { font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); margin-right: 8px;}
-        .dot-unseen { background: var(--border-color); }
-        .dot-review { background: var(--btn-red); }
-        .dot-mastered { background: var(--btn-green); }
+        .stats {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            background: rgba(255,255,255,0.3);
+            padding: 8px 16px;
+            border-radius: 99px;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .stat-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .stat-text {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-right: 8px;
+        }
+
+        .dot-unseen { background: var(--text-secondary); }
+        .dot-review { background: var(--btn-red); box-shadow: 0 0 10px var(--btn-red); }
+        .dot-mastered { background: var(--btn-green); box-shadow: 0 0 10px var(--btn-green); }
 
         .mode-toggle {
             display: flex;
-            background: var(--border-color);
+            background: rgba(255,255,255,0.3);
             border-radius: 99px;
-            padding: 2px;
+            padding: 4px;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-soft);
         }
 
         .mode-btn {
-            padding: 6px 16px;
-            font-size: 0.8rem;
-            font-weight: 700;
+            padding: 8px 20px;
+            font-size: 0.9rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
             border: none;
             background: transparent;
             color: var(--text-secondary);
             border-radius: 99px;
             cursor: pointer;
+            transition: all 0.3s;
         }
-        .mode-btn.active { background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        
+
+        .mode-btn.active {
+            background: var(--card-bg);
+            color: var(--accent-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
         .flashcard-container {
-            perspective: 1200px;
+            perspective: 1500px;
             width: 100%;
-            aspect-ratio: 4/5;
-            max-height: 55vh;
-            margin-bottom: 32px;
-            touch-action: none; /* Prevent scroll while swiping */
+            aspect-ratio: 3.5/5;
+            max-height: 60vh;
+            margin-bottom: 40px;
+            touch-action: none;
         }
-        
-        body.card-fullscreen-mode .nav-tabs,
-        body.card-fullscreen-mode .dashboard,
+
+        /* Fullscreen Rules */
+        body.card-fullscreen-mode .top-bar,
+        body.card-fullscreen-mode .sidebar,
         body.card-fullscreen-mode .header,
         body.card-fullscreen-mode .keyboard-hints {
             display: none !important;
         }
 
-        body.card-fullscreen-mode .app-core {
-            max-width: 100%;
-            height: 100vh;
+        body.card-fullscreen-mode .main-content {
+            padding: 0;
             justify-content: center;
         }
 
         body.card-fullscreen-mode .flashcard-container {
-            max-height: 85vh;
-            max-width: 68vh;
+            max-height: 90vh;
+            max-width: 70vh;
             width: 100%;
             margin-bottom: 0;
         }
 
         .fullscreen-icon {
             position: absolute;
-            top: 16px;
-            right: 16px;
-            background: rgba(255, 255, 255, 0.5);
-            border: 1px solid rgba(0,0,0,0.1);
-            border-radius: 12px;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.4);
+            border-radius: 16px;
             color: var(--text-secondary);
-            padding: 8px;
+            padding: 10px;
             cursor: pointer;
             z-index: 10;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
+            transition: all 0.3s;
+            backdrop-filter: blur(8px);
         }
+
         .fullscreen-icon:hover {
-            color: var(--text-main);
-            background: rgba(255, 255, 255, 0.9);
+            color: var(--accent-color);
+            background: rgba(255,255,255,0.8);
+            transform: scale(1.1);
         }
-        
-        body.card-fullscreen-mode .fullscreen-icon { top: 24px; right: 24px; }
-        body.card-fullscreen-mode .flashcard { margin: auto; }
-        
+
+        body.card-fullscreen-mode .fullscreen-icon {
+            top: 30px;
+            right: 30px;
+        }
+
+        body.card-fullscreen-mode .flashcard {
+            margin: auto;
+        }
+
         .flashcard {
             width: 100%;
             height: 100%;
             position: relative;
-            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
             transform-style: preserve-3d;
-            border-radius: 28px;
-            box-shadow: var(--shadow-soft);
+            border-radius: 36px;
+            box-shadow: var(--shadow-hover);
             cursor: pointer;
             will-change: transform;
+            border: 1px solid var(--card-border);
         }
 
-        .flashcard.is-flipped { transform: rotateY(180deg); }
+        .flashcard.is-flipped {
+            transform: rotateY(180deg);
+        }
         
+        .flashcard:hover {
+            box-shadow: 0 30px 60px -15px rgba(99, 102, 241, 0.4);
+        }
+
         .card-face {
             width: 100%;
             height: 100%;
@@ -284,79 +846,189 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border-radius: 28px;
+            border-radius: 36px;
             background: var(--card-bg);
-            padding: 32px;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            padding: 40px;
             box-sizing: border-box;
             text-align: center;
-            border: 1px solid rgba(0,0,0,0.05);
-            pointer-events: none; /* Let drag events pass to parent */
-        }
-        
-        .card-back { transform: rotateY(180deg); background: #fdfdfd; }
-        
-        .kanji { font-size: 4rem; font-weight: 700; color: var(--text-main); letter-spacing: -1px; }
-        .hiragana { font-size: 2.2rem; color: var(--text-main); margin-bottom: 12px; font-weight: 600; }
-        .romaji { font-size: 1rem; color: var(--text-secondary); margin-bottom: 24px; letter-spacing: 1px; }
-        .meaning { font-size: 1.5rem; font-weight: 700; color: var(--accent-blue); }
-        
-        .eval-controls {
-            display: flex;
-            gap: 16px;
-            width: 100%;
-            opacity: 0;
-            transform: translateY(10px);
             pointer-events: none;
-            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            overflow-y: auto;
         }
 
-        .eval-controls.visible { opacity: 1; transform: translateY(0); pointer-events: all; }
-        
+        .card-back {
+            transform: rotateY(180deg);
+            background: linear-gradient(135deg, var(--card-bg) 0%, rgba(255,255,255,0.4) 100%);
+        }
+
+        .card-main-text {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            word-break: break-word;
+            line-height: 1.1;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--text-main), var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card-sub-text {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            word-break: break-word;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .custom-fields-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 32px;
+            border-top: 2px dashed var(--border-color);
+            padding-top: 24px;
+        }
+
+        .cf-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            text-align: center;
+            background: rgba(255,255,255,0.3);
+            padding: 12px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .cf-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cf-value {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-main);
+            line-height: 1.4;
+        }
+
+        .eval-controls {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .eval-controls.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+
         .btn-eval {
             flex: 1;
-            padding: 16px 0;
-            font-size: 0.95rem;
+            padding: 20px 0;
+            font-size: 1.1rem;
+            font-family: 'Outfit', sans-serif;
             font-weight: 800;
             cursor: pointer;
             border: none;
-            border-radius: 16px;
+            border-radius: 24px;
             color: white;
-            transition: transform 0.1s, filter 0.2s;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
 
-        .btn-eval:active { transform: scale(0.96); }
-        .btn-review { background-color: var(--btn-red); }
-        .btn-mastered { background-color: var(--btn-green); }
+        .btn-eval:hover {
+            transform: translateY(-4px);
+        }
 
-        .keyboard-hints { margin-top: 30px; font-size: 0.8rem; color: var(--text-secondary); text-align: center; font-weight: 500;}
+        .btn-eval:active {
+            transform: translateY(2px) scale(0.96);
+        }
+
+        .btn-review {
+            background: linear-gradient(135deg, #f43f5e, #be123c);
+            box-shadow: 0 10px 20px rgba(244, 63, 94, 0.3);
+        }
+        
+        .btn-review:hover {
+            box-shadow: 0 15px 30px rgba(244, 63, 94, 0.4);
+        }
+
+        .btn-mastered {
+            background: linear-gradient(135deg, #10b981, #047857);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-mastered:hover {
+            box-shadow: 0 15px 30px rgba(16, 185, 129, 0.4);
+        }
+
+        .keyboard-hints {
+            margin-top: 40px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-align: center;
+            font-weight: 600;
+            background: rgba(255,255,255,0.3);
+            padding: 10px 20px;
+            border-radius: 99px;
+            backdrop-filter: blur(5px);
+            border: 1px solid var(--border-color);
+        }
 
         /* --- List View --- */
         .list-core {
             display: none;
             width: 100%;
-            max-width: 600px;
+            max-width: 640px;
             background: var(--card-bg);
-            border-radius: 20px;
-            box-shadow: var(--shadow-soft);
-            padding: 20px;
+            backdrop-filter: blur(20px);
+            border-radius: 32px;
+            box-shadow: var(--shadow-hover);
+            padding: 32px;
             box-sizing: border-box;
+            border: 1px solid var(--card-border);
+            animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .list-core.active { display: block; }
+        .list-core.active {
+            display: block;
+        }
 
         .list-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
-            padding-bottom: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 24px;
             border-bottom: 1px solid var(--border-color);
+        }
+        
+        .list-header strong {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-main);
         }
 
         .list-items {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
             max-height: 60vh;
             overflow-y: auto;
             padding-right: 8px;
@@ -366,68 +1038,105 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px;
-            background: var(--bg-color);
-            border-radius: 12px;
+            padding: 20px;
+            background: rgba(255,255,255,0.4);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s;
+        }
+        
+        .list-item:hover {
+            background: rgba(255,255,255,0.7);
+            transform: translateX(4px);
+            box-shadow: var(--shadow-soft);
         }
 
-        .list-info { display: flex; flex-direction: column; gap: 4px; }
-        .list-kanji { font-size: 1.2rem; font-weight: 700; }
-        .list-meaning { font-size: 0.85rem; color: var(--text-secondary); }
-        
-        .list-actions { display: flex; align-items: center; gap: 12px; }
+        .list-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .list-front {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .list-back {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .list-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
         .badge {
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding: 4px 10px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            padding: 6px 14px;
             border-radius: 99px;
             color: white;
             text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
+
         .badge.unseen { background: var(--text-secondary); }
         .badge.review { background: var(--btn-red); }
         .badge.mastered { background: var(--btn-green); }
 
         .btn-reset {
-            background: transparent;
+            background: rgba(255,255,255,0.5);
             border: 1px solid var(--border-color);
             color: var(--text-main);
-            padding: 6px 12px;
-            border-radius: 8px;
+            padding: 8px 16px;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: 600;
+            font-size: 0.85rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            transition: all 0.2s;
         }
-        .btn-reset:hover { background: #e4e6eb; }
+
+        .btn-reset:hover {
+            background: var(--text-main);
+            color: var(--bg-color);
+        }
 
         .custom-dropdown {
             position: relative;
             display: inline-block;
-            font-size: 0.85rem;
-            font-weight: 600;
+            font-size: 0.95rem;
+            font-weight: 700;
             user-select: none;
         }
 
         .dropdown-selected {
-            padding: 8px 16px;
-            padding-right: 32px;
+            padding: 12px 20px;
+            padding-right: 40px;
             border-radius: 99px;
-            background-color: var(--bg-color);
+            background-color: rgba(255,255,255,0.4);
             border: 1px solid var(--border-color);
-            color: var(--text-secondary);
+            color: var(--text-main);
             cursor: pointer;
             transition: all 0.2s ease;
-            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2365676b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236366f1%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
             background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 10px auto;
+            background-position: right 16px center;
+            background-size: 12px auto;
         }
 
-        .dropdown-selected:hover, .custom-dropdown.active .dropdown-selected {
-            color: var(--text-main);
-            border-color: var(--text-main);
-            background-color: var(--card-bg);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        .dropdown-selected:hover,
+        .custom-dropdown.active .dropdown-selected {
+            color: var(--accent-color);
+            border-color: var(--accent-color);
+            background-color: rgba(255,255,255,0.8);
+            box-shadow: var(--shadow-soft);
         }
 
         .dropdown-options {
@@ -435,11 +1144,12 @@
             position: absolute;
             top: 100%;
             right: 0;
-            margin-top: 8px;
+            margin-top: 12px;
             background-color: var(--card-bg);
-            min-width: 160px;
+            backdrop-filter: blur(20px);
+            min-width: 180px;
             box-shadow: var(--shadow-hover);
-            border-radius: 16px;
+            border-radius: 20px;
             border: 1px solid var(--border-color);
             z-index: 100;
             overflow: hidden;
@@ -447,468 +1157,781 @@
 
         .custom-dropdown.active .dropdown-options {
             display: block;
-            animation: fadeIn 0.15s ease-out;
+            animation: fadeIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-8px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .dropdown-option {
-            padding: 12px 16px;
+            padding: 14px 20px;
             color: var(--text-main);
             cursor: pointer;
             transition: background-color 0.2s;
         }
 
         .dropdown-option:hover {
-            background-color: var(--bg-color);
+            background-color: rgba(99, 102, 241, 0.1);
+            color: var(--accent-color);
+        }
+
+        .dropdown-option.selected {
+            background-color: rgba(99, 102, 241, 0.15);
+            font-weight: 800;
+            color: var(--accent-color);
+        }
+
+        /* --- Create Deck Panel --- */
+        .create-core {
+            display: none;
+            width: 100%;
+            max-width: 640px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 32px;
+            box-shadow: var(--shadow-hover);
+            padding: 32px;
+            box-sizing: border-box;
+            border: 1px solid var(--card-border);
+            animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .create-core.active {
+            display: block;
+        }
+
+        .create-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .create-header strong {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .create-method-tabs {
+            display: flex;
+            background: rgba(255,255,255,0.3);
+            padding: 6px;
+            border-radius: 99px;
+            gap: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .create-method-btn {
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 99px;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .create-method-btn.active {
+            background: var(--card-bg);
+            color: var(--accent-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .create-deck-name-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            align-items: center;
+        }
+
+        .create-deck-name-row input,
+        .create-deck-name-row select {
+            flex: 1;
+        }
+
+        .field-builder-wrapper {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), margin-bottom 0.4s;
+            margin-bottom: 0;
+        }
+
+        .field-builder-wrapper.show {
+            max-height: 300px;
+            margin-bottom: 24px;
+        }
+
+        .field-builder-inner {
+            background: rgba(99, 102, 241, 0.05);
+            border: 2px dashed rgba(99, 102, 241, 0.3);
+            border-radius: 24px;
+            padding: 24px;
+        }
+
+        .field-builder-title {
+            font-size: 1rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            color: var(--accent-color);
+        }
+
+        .field-builder-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .field-builder-row input {
+            flex: 1;
+            min-width: 160px;
+        }
+
+        .side-toggle {
+            display: flex;
+            background: rgba(255,255,255,0.5);
+            padding: 6px;
+            border-radius: 16px;
+            flex: 0.8;
+            min-width: 160px;
+            border: 1px solid var(--border-color);
+        }
+
+        .side-option {
+            flex: 1;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 800;
+            padding: 12px 0;
+            border-radius: 12px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.3s;
+            user-select: none;
+        }
+
+        .side-option.active {
+            background: var(--card-bg);
+            color: var(--accent-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .field-builder-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        #create-manual-view {
+            display: block;
+        }
+
+        .manual-card-form {
+            background: rgba(255,255,255,0.3);
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
+        }
+
+        .manual-card-form .field-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .manual-card-form .field-row:last-of-type {
+            margin-bottom: 0;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .field-group label {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .manual-add-hint {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+
+        #create-csv-view {
+            display: none;
+        }
+
+        .csv-textarea {
+            width: 100%;
+            min-height: 240px;
+            padding: 20px;
+            font-family: 'Outfit', monospace;
+            resize: vertical;
+            white-space: pre;
+            overflow-wrap: normal;
+            overflow-x: auto;
+            border-radius: 20px;
+        }
+
+        .csv-hint {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 12px;
+            margin-bottom: 16px;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        #create-list-view {
+            display: none;
+        }
+
+        .create-card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 380px;
+            overflow-y: auto;
+            margin-bottom: 16px;
+            padding-right: 8px;
+        }
+
+        .create-card-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 20px;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s;
         }
         
-        .dropdown-option.selected {
-            background-color: #e4e6eb;
-            font-weight: 700;
+        .create-card-item:hover {
+            background: rgba(255,255,255,0.8);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .create-card-item .card-num {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            min-width: 28px;
+        }
+
+        .create-card-item .card-fields {
+            display: flex;
+            gap: 12px;
+            flex: 1;
+            flex-wrap: wrap;
+        }
+
+        .create-card-item .card-fields input {
+            flex: 1;
+            min-width: 100px;
+            padding: 10px 14px;
+            font-size: 0.95rem;
+        }
+
+        .create-card-item .btn-del-card {
+            background: rgba(244, 63, 94, 0.1);
+            border: none;
+            color: var(--btn-red);
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 8px 12px;
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+
+        .create-card-item .btn-del-card:hover {
+            background: var(--btn-red);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .create-empty-state {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 60px 0;
+        }
+
+        .create-footer {
+            display: flex;
+            gap: 16px;
+            margin-top: 16px;
+            align-items: center;
+        }
+
+        .create-count-badge {
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            padding: 10px 20px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 99px;
+            white-space: nowrap;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .create-success-toast {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--accent-gradient);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 99px;
+            font-size: 1rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            z-index: 999;
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s;
+            opacity: 0;
+            white-space: nowrap;
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.4);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .create-success-toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
         }
 
     </style>
 </head>
+
 <body>
 
-    <div class="nav-tabs">
-        <div class="nav-tab active" id="tab-study" onclick="switchView('study')">Study Mode</div>
-        <div class="nav-tab" id="tab-list" onclick="switchView('list')">List Revision</div>
-    </div>
+    <div class="app-layout">
 
-    <div class="dashboard">
-        <div class="deck-selector" id="deck-selector"></div>
-        <div class="settings-row">
-            <input type="number" id="session-limit" placeholder="Limit session (e.g. 20)">
-            <select id="ui-scale" onchange="changeUIScale()" style="flex: 0.8">
-                <option value="0.8">Small</option>
-                <option value="1.0" selected>Normal</option>
-                <option value="1.2">Large</option>
-            </select>
-            <button class="small-btn" onclick="applySettings(true)">Compile</button>
-        </div>
-        <div class="settings-row" style="margin-top: 8px;">
-            <button class="small-btn secondary-btn" style="flex: 1;" onclick="exportData()">Export Data</button>
-            <button class="small-btn secondary-btn" style="flex: 1;" onclick="document.getElementById('import-file').click()">Import Data</button>
-            <input type="file" id="import-file" style="display: none" accept=".json" onchange="importData(event)">
-        </div>
-    </div>
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 
-    <div class="app-core" id="app-study">
-        <div class="header">
-            <div class="stats">
-                <span class="stat-text" id="stat-unseen">0 Left</span>
-                <div class="stat-dot dot-review" title="Needs Review"></div>
-                <div class="stat-dot dot-mastered" title="Mastered"></div>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>StudyFlow Pro</h2>
+                <button class="sidebar-close-btn" onclick="closeSidebar()" aria-label="Close Sidebar">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
             </div>
-            <div class="mode-toggle">
-                <button class="mode-btn active" id="btn-seq" onclick="setMode('sequential')">Seq</button>
-                <button class="mode-btn" id="btn-quiz" onclick="setMode('quiz')">Mix</button>
-            </div>
-        </div>
 
-        <div class="flashcard-container" id="card-container">
-            <button class="fullscreen-icon" onclick="toggleCardFullscreen(event)" aria-label="Fullscreen Card">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
-                </svg>
-            </button>
-            <div class="flashcard" id="flashcard">
-                <div class="card-face card-front">
-                    <div class="kanji" id="front-text">...</div>
+            <div class="sidebar-section-title">Your Decks</div>
+            <div id="deck-selector" class="sidebar-deck-list">
+            </div>
+        </aside>
+
+        <main class="main-content">
+
+            <div class="top-bar">
+                <button class="icon-btn menu-btn" onclick="toggleSidebar()" aria-label="Menu">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <nav class="nav-tabs">
+                    <div class="nav-tab active" id="tab-flashcards" onclick="switchView('flashcards')">Flashcards</div>
+                    <div class="nav-tab" id="tab-quiz" onclick="switchView('quiz')">Quiz</div>
+                    <div class="nav-tab" id="tab-list" onclick="switchView('list')">Review</div>
+                    <div class="nav-tab" id="tab-create" onclick="switchView('create')">+ Create</div>
+                </nav>
+                <button class="icon-btn" onclick="openSettings()" aria-label="Settings">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+
+            <div id="settings-modal" class="modal-overlay">
+                <div class="modal-content" onclick="event.stopPropagation()">
+                    <div class="modal-header">
+                        Settings
+                        <span class="close-modal" onclick="closeSettings()">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </span>
+                    </div>
+
+                    <div class="settings-section">
+                        <span class="settings-label">Appearance</span>
+                        <button class="small-btn secondary-btn" id="theme-toggle-btn"
+                            style="width: 100%; margin-bottom: 16px; text-align: left; justify-content: flex-start; display: flex; align-items: center; gap: 8px;"
+                            onclick="toggleTheme()">☀️ Light Mode</button>
+
+                        <span class="settings-label">Accent Color</span>
+                        <div class="color-swatches">
+                            <div class="color-swatch active" id="swatch-default"
+                                style="background: linear-gradient(135deg, #111 50%, #eee 50%); border: 1px solid var(--border-color);"
+                                onclick="setAccentColor('default')" title="Default (B&W)"></div>
+                            <div class="color-swatch" id="swatch-blue" style="background: #1877f2;"
+                                onclick="setAccentColor('blue')"></div>
+                            <div class="color-swatch" id="swatch-purple" style="background: #8a2be2;"
+                                onclick="setAccentColor('purple')"></div>
+                            <div class="color-swatch" id="swatch-teal" style="background: #08a05c;"
+                                onclick="setAccentColor('teal')"></div>
+                            <div class="color-swatch" id="swatch-orange" style="background: #d97706;"
+                                onclick="setAccentColor('orange')"></div>
+                            <div class="color-swatch" id="swatch-rose" style="background: #e03131;"
+                                onclick="setAccentColor('rose')"></div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <span class="settings-label">Study Preferences</span>
+                        <div class="field-group" style="margin-bottom: 12px;">
+                            <input type="number" id="session-limit" placeholder="Card limit per session (e.g. 20)">
+                        </div>
+                        <div class="field-group">
+                            <select id="ui-scale" onchange="changeUIScale()">
+                                <option value="0.8">UI Size: Small</option>
+                                <option value="1.0" selected>UI Size: Normal</option>
+                                <option value="1.2">UI Size: Large</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="settings-section" style="margin-bottom: 0;">
+                        <span class="settings-label">Data Management</span>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="small-btn secondary-btn" style="flex: 1;" onclick="exportData()">Export
+                                Data</button>
+                            <button class="small-btn secondary-btn" style="flex: 1;"
+                                onclick="document.getElementById('import-file').click()">Import Data</button>
+                            <input type="file" id="import-file" style="display: none" accept=".json"
+                                onchange="importData(event)">
+                        </div>
+                    </div>
                 </div>
-                <div class="card-face card-back">
-                    <div class="hiragana" id="back-hiragana"></div>
-                    <div class="romaji" id="back-romaji"></div>
-                    <div class="meaning" id="back-meaning"></div>
+            </div>
+
+            <div class="create-success-toast" id="create-toast"></div>
+
+            <div class="dashboard" id="app-dashboard">
+                <div class="dashboard-hero">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round" stroke-linejoin="round"
+                        style="margin-bottom: 16px; color: var(--accent-color);">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="3" y1="9" x2="21" y2="9"></line>
+                        <line x1="9" y1="21" x2="9" y2="9"></line>
+                    </svg>
+                    <h2>Select your decks</h2>
+                    <p>Use the sidebar to choose what you want to study today, then start your session.</p>
+                </div>
+                <button class="btn-start-session" onclick="applySettings(true)">Start Study Session</button>
+            </div>
+
+            <div class="app-core" id="app-study" style="display: none;">
+                <div class="header">
+                    <div class="stats">
+                        <span class="stat-text" id="stat-unseen">0 Left</span>
+                        <div class="stat-dot dot-review" title="Needs Review"></div>
+                        <div class="stat-dot dot-mastered" title="Mastered"></div>
+                    </div>
+                </div>
+
+                <div class="flashcard-container" id="card-container">
+                    <button class="fullscreen-icon" onclick="toggleCardFullscreen(event)" aria-label="Fullscreen Card">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3">
+                            </path>
+                        </svg>
+                    </button>
+                    <div class="flashcard" id="flashcard">
+                        <div class="card-face card-front">
+                            <div class="card-main-text" id="front-text">...</div>
+                            <div id="front-custom" class="custom-fields-container" style="display:none;"></div>
+                            <div id="quiz-options-container" class="quiz-options-container" style="display:none;"></div>
+                        </div>
+                        <div class="card-face card-back">
+                            <div class="card-sub-text" id="back-text"></div>
+                            <div id="back-custom" class="custom-fields-container" style="display:none;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="eval-controls" id="eval-controls">
+                    <button class="btn-eval btn-review" onclick="markCard('review', event)">Review</button>
+                    <button class="btn-eval btn-mastered" onclick="markCard('mastered', event)">Mastered</button>
+                </div>
+
+                <div class="keyboard-hints">Space to Flip • Swipe Left/Right to Grade</div>
+            </div>
+
+            <div class="list-core" id="app-list">
+                <div class="list-header">
+                    <strong>Database Overview</strong>
+                    <div class="custom-dropdown" id="list-filter-dropdown">
+                        <div class="dropdown-selected" id="list-filter-selected" onclick="toggleDropdown(event)">All
+                            Status</div>
+                        <div class="dropdown-options" id="list-filter-options">
+                            <div class="dropdown-option selected"
+                                onclick="selectFilter('all', 'All Status', this, event)">All Status</div>
+                            <div class="dropdown-option" onclick="selectFilter('unseen', 'Unseen Only', this, event)">
+                                Unseen Only</div>
+                            <div class="dropdown-option" onclick="selectFilter('review', 'Review Only', this, event)">
+                                Review Only</div>
+                            <div class="dropdown-option"
+                                onclick="selectFilter('mastered', 'Mastered Only', this, event)">Mastered Only</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="list-items" id="list-items-container"></div>
+            </div>
+
+            <div class="create-core" id="app-create">
+                <div class="create-header">
+                    <strong>Create deck</strong>
+                    <div class="create-method-tabs">
+                        <button class="create-method-btn active" id="cmb-manual"
+                            onclick="switchCreateMethod('manual')">Manual</button>
+                        <button class="create-method-btn" id="cmb-csv" onclick="switchCreateMethod('csv')">CSV</button>
+                        <button class="create-method-btn" id="cmb-list"
+                            onclick="switchCreateMethod('list')">List</button>
+                        <div style="width: 1px; background: var(--border-color); margin: 0 4px;"></div>
+                        <button class="create-method-btn" style="color: var(--accent-color);"
+                            onclick="openFieldBuilder()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+                                style="vertical-align: text-top; margin-right: 2px;">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg> Field
+                        </button>
+                    </div>
+                </div>
+
+                <div class="create-deck-name-row">
+                    <select id="target-deck-select" onchange="onTargetDeckChange()">
+                        <option value="_new_">+ Create New Deck</option>
+                    </select>
+                    <input type="text" id="new-deck-name" placeholder="New deck name (e.g. Biology Ch. 1)"
+                        maxlength="40">
+                </div>
+
+                <div id="field-builder-wrapper" class="field-builder-wrapper">
+                    <div class="field-builder-inner">
+                        <div class="field-builder-title">New Custom Field</div>
+                        <div class="field-builder-row">
+                            <input type="text" id="new-field-name" placeholder="e.g. Example Sentence"
+                                autocomplete="off" onkeydown="if(event.key === 'Enter') confirmAddField()">
+                            <div class="side-toggle">
+                                <div class="side-option active" id="st-front" onclick="setFieldSide('front')">Front Card
+                                </div>
+                                <div class="side-option" id="st-back" onclick="setFieldSide('back')">Back Card</div>
+                            </div>
+                        </div>
+                        <div class="field-builder-actions">
+                            <button class="small-btn secondary-btn" onclick="closeFieldBuilder()">Cancel</button>
+                            <button class="small-btn" onclick="confirmAddField()">+ Add Field</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="create-manual-view">
+                    <div class="manual-card-form" id="manual-form">
+                    </div>
+                    <div class="manual-add-hint">Press <strong>Enter</strong> in any field to add card &amp; start next
+                        — Tab to move between fields</div>
+                    <button class="small-btn"
+                        style="width:100%;margin-bottom:12px; border: 1px solid var(--border-color);"
+                        onclick="manualAddCard()">+ Add this card</button>
+                </div>
+
+                <div id="create-csv-view">
+                    <textarea class="csv-textarea" id="csv-input"
+                        placeholder="front, back&#10;Paris, France&#10;H2O, Water" oninput="onCsvInput()"></textarea>
+                    <div class="csv-hint" id="csv-hint-text">One card per line &bull; Format:
+                        <code>front, back</code><br>Changes update the card list instantly — switch to List tab to
+                        review &amp; edit.</div>
+                </div>
+
+                <div id="create-list-view">
+                    <div class="create-card-list" id="create-card-list"></div>
+                    <button class="small-btn secondary-btn" style="width:100%;margin-bottom:8px;"
+                        onclick="listAddBlankCard()">+ Add card</button>
+                </div>
+
+                <div class="create-footer">
+                    <span class="create-count-badge" id="create-count">0 cards</span>
+                    <div style="flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 12px;">
+                        <label
+                            style="font-size: 0.8rem; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none;">
+                            <input type="checkbox" id="auto-save-draft" onchange="toggleAutoSave()"> Auto-save draft
+                        </label>
+                        <button class="small-btn" id="btn-save-deck" style="flex: none; padding: 13px 24px;"
+                            onclick="saveDeck()">Save deck</button>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="eval-controls" id="eval-controls">
-            <button class="btn-eval btn-review" onclick="markCard('review', event)">Review</button>
-            <button class="btn-eval btn-mastered" onclick="markCard('mastered', event)">Mastered</button>
-        </div>
-
-        <div class="keyboard-hints">Space to Flip • Swipe Left/Right to Grade</div>
-    </div>
-
-    <div class="list-core" id="app-list">
-        <div class="list-header">
-            <strong>Database Overview</strong>
-            <div class="custom-dropdown" id="list-filter-dropdown">
-                <div class="dropdown-selected" id="list-filter-selected" onclick="toggleDropdown(event)">All Status</div>
-                <div class="dropdown-options" id="list-filter-options">
-                    <div class="dropdown-option selected" onclick="selectFilter('all', 'All Status', this)">All Status</div>
-                    <div class="dropdown-option" onclick="selectFilter('unseen', 'Unseen Only', this)">Unseen Only</div>
-                    <div class="dropdown-option" onclick="selectFilter('review', 'Review Only', this)">Review Only</div>
-                    <div class="dropdown-option" onclick="selectFilter('mastered', 'Mastered Only', this)">Mastered Only</div>
-                </div>
-            </div>
-        </div>
-        <div class="list-items" id="list-items-container">
-            </div>
+        </main>
     </div>
 
     <script>
-        // --- High Volume JLPT N5 Dictionary (200+ Core Items) ---
-        const defaultData = {
-            "Adjectives": [
-                { id: 'adj_1', kanji: '大きい', hiragana: 'おおきい', romaji: 'ookii', meaning: '大的', status: 'unseen' },
-                { id: 'adj_2', kanji: '小さい', hiragana: 'ちいさい', romaji: 'chiisai', meaning: '小的', status: 'unseen' },
-                { id: 'adj_3', kanji: '高い', hiragana: 'たかい', romaji: 'takai', meaning: '高的/贵的', status: 'unseen' },
-                { id: 'adj_4', kanji: '安い', hiragana: 'やすい', romaji: 'yasui', meaning: '便宜的', status: 'unseen' },
-                { id: 'adj_5', kanji: '新しい', hiragana: 'あたらしい', romaji: 'atarashii', meaning: '新的', status: 'unseen' },
-                { id: 'adj_6', kanji: '古い', hiragana: 'ふるい', romaji: 'furui', meaning: '旧的', status: 'unseen' },
-                { id: 'adj_7', kanji: '暑い', hiragana: 'あつい', romaji: 'atsui', meaning: '热的（天气）', status: 'unseen' },
-                { id: 'adj_8', kanji: '寒い', hiragana: 'さむい', romaji: 'samui', meaning: '冷的（天气）', status: 'unseen' },
-                { id: 'adj_9', kanji: '忙しい', hiragana: 'いそがしい', romaji: 'isogashii', meaning: '忙的', status: 'unseen' },
-                { id: 'adj_10', kanji: '楽しい', hiragana: 'たのしい', romaji: 'tanoshii', meaning: '开心的', status: 'unseen' },
-                { id: 'adj_11', kanji: '難しい', hiragana: 'むずかしい', romaji: 'muzukashii', meaning: '困难的', status: 'unseen' },
-                { id: 'adj_12', kanji: '簡単', hiragana: 'かんたん', romaji: 'kantan', meaning: '简单（な）', status: 'unseen' },
-                { id: 'adj_13', kanji: 'きれい', hiragana: 'きれい', romaji: 'kirei', meaning: '漂亮/干净（な）', status: 'unseen' },
-                { id: 'adj_14', kanji: '元気', hiragana: 'げんき', romaji: 'genki', meaning: '有精神的（な）', status: 'unseen' },
-                { id: 'adj_15', kanji: '重い', hiragana: 'おもい', romaji: 'omoi', meaning: '重的', status: 'unseen' },
-                { id: 'adj_16', kanji: '軽い', hiragana: 'かるい', romaji: 'karui', meaning: '轻的', status: 'unseen' },
-                { id: 'adj_17', kanji: '近い', hiragana: 'ちかい', romaji: 'chikai', meaning: '近的', status: 'unseen' },
-                { id: 'adj_18', kanji: '遠い', hiragana: 'とおい', romaji: 'tooi', meaning: '远的', status: 'unseen' },
-                { id: 'adj_19', kanji: 'おいしい', hiragana: 'おいしい', romaji: 'oishii', meaning: '好吃的', status: 'unseen' },
-                { id: 'adj_20', kanji: 'まずい', hiragana: 'mazui', meaning: '难吃的', status: 'unseen' },
-                { id: 'adj_21', kanji: '痛い', hiragana: 'いたい', romaji: 'itai', meaning: '痛的', status: 'unseen' },
-                { id: 'adj_22', kanji: '甘い', hiragana: 'あまい', romaji: 'amai', meaning: '甜的', status: 'unseen' },
-                { id: 'adj_23', kanji: '辛い', hiragana: 'からい', romaji: 'karai', meaning: '辣的', status: 'unseen' },
-                { id: 'adj_24', kanji: '広い', hiragana: 'ひろい', romaji: 'hiroi', meaning: '宽的', status: 'unseen' },
-                { id: 'adj_25', kanji: '狭い', hiragana: 'せまい', romaji: 'semai', meaning: '窄的', status: 'unseen' },
-                { id: 'adj_26', kanji: '暇', hiragana: 'ひま', romaji: 'hima', meaning: '空闲的（な）', status: 'unseen' },
-                { id: 'adj_27', kanji: '静か', hiragana: 'しずか', romaji: 'shizuka', meaning: '安静的（な）', status: 'unseen' },
-                { id: 'adj_28', kanji: '便利', hiragana: 'べんり', romaji: 'benri', meaning: '方便的（な）', status: 'unseen' },
-                { id: 'adj_29', kanji: '好き', hiragana: 'すき', romaji: 'suki', meaning: '喜欢的（な）', status: 'unseen' },
-                { id: 'adj_30', kanji: '有名', hiragana: 'ゆうめい', romaji: 'yuumei', meaning: '有名的（な）', status: 'unseen' },
-                { id: 'adj_31', kanji: '多い', hiragana: 'おおい', romaji: 'ooi', meaning: '多的', status: 'unseen' },
-                { id: 'adj_32', kanji: '少ない', hiragana: 'すくない', romaji: 'sukunai', meaning: '少的', status: 'unseen' },
-                { id: 'adj_33', kanji: '長い', hiragana: 'ながい', romaji: 'nagai', meaning: '长的', status: 'unseen' },
-                { id: 'adj_34', kanji: '短い', hiragana: 'みじかい', romaji: 'mijikai', meaning: '短的', status: 'unseen' },
-                { id: 'adj_35', kanji: '速い', hiragana: 'はやい', romaji: 'hayai', meaning: '快的', status: 'unseen' },
-                { id: 'adj_36', kanji: '遅い', hiragana: 'おそい', romaji: 'osoi', meaning: '慢的', status: 'unseen' },
-                { id: 'adj_37', kanji: '暖かい', hiragana: 'あたたかい', romaji: 'atatakai', meaning: '温暖的', status: 'unseen' },
-                { id: 'adj_38', kanji: '涼しい', hiragana: 'すずしい', romaji: 'suzushii', meaning: '凉爽的', status: 'unseen' },
-                { id: 'adj_39', kanji: '冷たい', hiragana: 'つめたい', romaji: 'tsumetai', meaning: '冰冷的（物体）', status: 'unseen' },
-                { id: 'adj_40', kanji: '眠い', hiragana: 'ねむい', romaji: 'nemui', meaning: '困倦的', status: 'unseen' },
-                { id: 'adj_41', kanji: '強い', hiragana: 'つよい', romaji: 'tsuyoi', meaning: '强的', status: 'unseen' },
-                { id: 'adj_42', kanji: '弱い', hiragana: 'よわい', romaji: 'yowai', meaning: '弱的', status: 'unseen' },
-                { id: 'adj_43', kanji: '若い', hiragana: 'わかい', romaji: 'wakai', meaning: '年轻的', status: 'unseen' },
-                { id: 'adj_44', kanji: '暗い', hiragana: 'くらい', romaji: 'kurai', meaning: '暗的', status: 'unseen' },
-                { id: 'adj_45', kanji: '明るい', hiragana: 'あかるい', romaji: 'akarui', meaning: '明亮的', status: 'unseen' },
-                { id: 'adj_46', kanji: '危ない', hiragana: 'あぶない', romaji: 'abunai', meaning: '危险的', status: 'unseen' },
-                { id: 'adj_47', kanji: '汚い', hiragana: 'きたない', romaji: 'kitanai', meaning: '脏的', status: 'unseen' },
-                { id: 'adj_48', kanji: '厚い', hiragana: 'あつい', romaji: 'atsui', meaning: '厚的', status: 'unseen' },
-                { id: 'adj_49', kanji: '薄い', hiragana: 'うすい', romaji: 'usui', meaning: '薄的', status: 'unseen' },
-                { id: 'adj_50', kanji: '太い', hiragana: 'ふとい', romaji: 'futoi', meaning: '粗的/胖的', status: 'unseen' },
-                { id: 'adj_51', kanji: '細い', hiragana: 'ほそい', romaji: 'hosoi', meaning: '细的/瘦的', status: 'unseen' },
-                { id: 'adj_52', kanji: '丸い', hiragana: 'まるい', romaji: 'marui', meaning: '圆的', status: 'unseen' },
-                { id: 'adj_53', kanji: '欲しい', hiragana: 'ほしい', romaji: 'hoshii', meaning: '想要的', status: 'unseen' },
-                { id: 'adj_54', kanji: '苦い', hiragana: 'にがい', romaji: 'nigai', meaning: '苦的', status: 'unseen' },
-                { id: 'adj_55', kanji: '酸っぱい', hiragana: 'すっぱい', romaji: 'suppai', meaning: '酸的', status: 'unseen' },
-                { id: 'adj_56', kanji: 'うるさい', hiragana: 'うるさい', romaji: 'urusai', meaning: '吵闹的', status: 'unseen' },
-                { id: 'adj_57', kanji: 'すごい', hiragana: 'すごい', romaji: 'sugoi', meaning: '厉害的', status: 'unseen' },
-                { id: 'adj_58', kanji: '白い', hiragana: 'しろい', romaji: 'shiroi', meaning: '白的', status: 'unseen' },
-                { id: 'adj_59', kanji: '黒い', hiragana: 'くろい', romaji: 'kuroi', meaning: '黑的', status: 'unseen' },
-                { id: 'adj_60', kanji: '赤い', hiragana: 'あかい', romaji: 'akai', meaning: '红的', status: 'unseen' },
-                { id: 'adj_61', kanji: '青い', hiragana: 'あおい', romaji: 'aoi', meaning: '蓝的', status: 'unseen' },
-                { id: 'adj_62', kanji: '黄色い', hiragana: 'きいろい', romaji: 'kiiroi', meaning: '黄的', status: 'unseen' },
-                { id: 'adj_63', kanji: '茶色い', hiragana: 'ちゃいろい', romaji: 'chairoi', meaning: '棕色的', status: 'unseen' },
-                { id: 'adj_64', kanji: '嫌い', hiragana: 'きらい', romaji: 'kirai', meaning: '讨厌的（な）', status: 'unseen' },
-                { id: 'adj_65', kanji: '大好き', hiragana: 'だいすき', romaji: 'daisuki', meaning: '最喜欢的（な）', status: 'unseen' },
-                { id: 'adj_66', kanji: '丈夫', hiragana: 'じょうぶ', romaji: 'joubu', meaning: '结实的（な）', status: 'unseen' },
-                { id: 'adj_67', kanji: '大丈夫', hiragana: 'だいじょうぶ', romaji: 'daijoubu', meaning: '没问题的（な）', status: 'unseen' },
-                { id: 'adj_68', kanji: '大切', hiragana: 'たいせつ', romaji: 'taisetsu', meaning: '重要的（な）', status: 'unseen' },
-                { id: 'adj_69', kanji: '丁寧', hiragana: 'ていねい', romaji: 'teinei', meaning: '礼貌的/仔细的（な）', status: 'unseen' },
-                { id: 'adj_70', kanji: '上手', hiragana: 'じょうず', romaji: 'jouzu', meaning: '擅长的（な）', status: 'unseen' },
-                { id: 'adj_71', kanji: '下手', hiragana: 'へた', romaji: 'heta', meaning: '不擅长的（な）', status: 'unseen' },
-                { id: 'adj_72', kanji: '賑やか', hiragana: 'にぎやか', romaji: 'nigiyaka', meaning: '热闹的（な）', status: 'unseen' },
-                { id: 'adj_73', kanji: '不便', hiragana: 'ふべん', romaji: 'fuben', meaning: '不方便的（な）', status: 'unseen' },
-                { id: 'adj_74', kanji: '立派', hiragana: 'りっぱ', romaji: 'rippa', meaning: '杰出的/壮丽的（な）', status: 'unseen' },
-                { id: 'adj_75', kanji: '色々', hiragana: 'いろいろ', romaji: 'iroiro', meaning: '各种各样的（な）', status: 'unseen' },
-                { id: 'adj_76', kanji: '大変', hiragana: 'たいへん', romaji: 'taihen', meaning: '辛苦的/严重的（な）', status: 'unseen' },
-                { id: 'adj_77', kanji: '親切', hiragana: 'しんせつ', romaji: 'shinsetsu', meaning: '亲切的/热情的（な）', status: 'unseen' },
-                { id: 'adj_78', kanji: '同じ', hiragana: 'おなじ', romaji: 'onaji', meaning: '相同的', status: 'unseen' },
-                { id: 'adj_79', kanji: '素晴らしい', hiragana: 'すばらしい', romaji: 'subarashii', meaning: '极好的/绝妙的', status: 'unseen' },
-                { id: 'adj_80', kanji: 'ひどい', hiragana: 'ひどい', romaji: 'hidoi', meaning: '过分的/残酷的', status: 'unseen' },
-                { id: 'adj_81', kanji: '珍しい', hiragana: 'めずらしい', romaji: 'mezurashii', meaning: '罕见的/珍贵的', status: 'unseen' },
-                { id: 'adj_82', kanji: '寂しい', hiragana: 'さびしい', romaji: 'sabishii', meaning: '寂寞的', status: 'unseen' },
-                { id: 'adj_83', kanji: '恥ずかしい', hiragana: 'はずかしい', romaji: 'hazukashii', meaning: '害羞的/可耻的', status: 'unseen' },
-                { id: 'adj_84', kanji: '厳しい', hiragana: 'きびしい', romaji: 'kibishii', meaning: '严格的', status: 'unseen' },
-                { id: 'adj_85', kanji: '気分がいい', hiragana: 'きぶん が いい', romaji: 'kibun ga ii', meaning: '心情好/舒服', status: 'unseen' },
-                { id: 'adj_86', kanji: '気分が悪い', hiragana: 'きぶん が わるい', romaji: 'kibun ga warui', meaning: '心情不好/不舒服', status: 'unseen' },
-                { id: 'adj_87', kanji: '安全', hiragana: 'あんぜん', romaji: 'anzen', meaning: '安全的（な）', status: 'unseen' },
-                { id: 'adj_88', kanji: '危険', hiragana: 'きけん', romaji: 'kiken', meaning: '危险的（な）', status: 'unseen' },
-                { id: 'adj_89', kanji: '急', hiragana: 'きゅう', romaji: 'kyuu', meaning: '突然的/紧急的（な）', status: 'unseen' },
-                { id: 'adj_90', kanji: '眠たい', hiragana: 'ねむたい', romaji: 'nemutai', meaning: '困的', status: 'unseen' },
-                { id: 'adj_91', kanji: '美しい', hiragana: 'うつくしい', romaji: 'utsukushii', meaning: '美丽的', status: 'unseen' },
-                { id: 'adj_92', kanji: '細かい', hiragana: 'こまかい', romaji: 'komakai', meaning: '细小的/详细的', status: 'unseen' },
-                { id: 'adj_93', kanji: '怖い', hiragana: 'こわい', romaji: 'kowai', meaning: '可怕的', status: 'unseen' },
-                { id: 'adj_94', kanji: '無理', hiragana: 'むり', romaji: 'muri', meaning: '勉强的/不可能的（な）', status: 'unseen' },
-                { id: 'adj_95', kanji: 'だめ', hiragana: 'だめ', romaji: 'dame', meaning: '不行的（な）', status: 'unseen' },
-                { id: 'adj_96', kanji: '変', hiragana: 'へん', romaji: 'hen', meaning: '奇怪的（な）', status: 'unseen' }
-            ],
-            "Verbs": [
-                { id: 'vrb_1', kanji: '食べる', hiragana: 'たべる', romaji: 'taberu', meaning: '吃', status: 'unseen' },
-                { id: 'vrb_2', kanji: '飲む', hiragana: 'のむ', romaji: 'nomu', meaning: '喝', status: 'unseen' },
-                { id: 'vrb_3', kanji: '行く', hiragana: 'いく', romaji: 'iku', meaning: '去', status: 'unseen' },
-                { id: 'vrb_4', kanji: '来る', hiragana: 'くる', romaji: 'kuru', meaning: '来', status: 'unseen' },
-                { id: 'vrb_5', kanji: '見る', hiragana: 'みる', romaji: 'miru', meaning: '看', status: 'unseen' },
-                { id: 'vrb_6', kanji: '聞く', hiragana: 'きく', romaji: 'kiku', meaning: '听/问', status: 'unseen' },
-                { id: 'vrb_7', kanji: '話す', hiragana: 'はなす', romaji: 'hanasu', meaning: '说', status: 'unseen' },
-                { id: 'vrb_8', kanji: '買う', hiragana: 'かう', romaji: 'kau', meaning: '买', status: 'unseen' },
-                { id: 'vrb_9', kanji: '書く', hiragana: 'かく', romaji: 'kaku', meaning: '写', status: 'unseen' },
-                { id: 'vrb_10', kanji: '読む', hiragana: 'よむ', romaji: 'yomu', meaning: '读', status: 'unseen' },
-                { id: 'vrb_11', kanji: '寝る', hiragana: 'ねる', romaji: 'neru', meaning: '睡觉', status: 'unseen' },
-                { id: 'vrb_12', kanji: '起きる', hiragana: 'おきる', romaji: 'okiru', meaning: '起床', status: 'unseen' },
-                { id: 'vrb_13', kanji: '働く', hiragana: 'はたらく', romaji: 'hataraku', meaning: '工作', status: 'unseen' },
-                { id: 'vrb_14', kanji: '休む', hiragana: 'やすむ', romaji: 'yasumu', meaning: '休息', status: 'unseen' },
-                { id: 'vrb_15', kanji: '作る', hiragana: 'つくる', romaji: 'tsukuru', meaning: '制作', status: 'unseen' },
-                { id: 'vrb_16', kanji: '使う', hiragana: 'つかう', romaji: 'tsukau', meaning: '使用', status: 'unseen' },
-                { id: 'vrb_17', kanji: '開ける', hiragana: 'あける', romaji: 'akeru', meaning: '打开', status: 'unseen' },
-                { id: 'vrb_18', kanji: '閉める', hiragana: 'しめる', romaji: 'shimeru', meaning: '关闭', status: 'unseen' },
-                { id: 'vrb_19', kanji: '始める', hiragana: 'はじめる', romaji: 'hajimeru', meaning: '开始', status: 'unseen' },
-                { id: 'vrb_20', kanji: '終わる', hiragana: 'おわる', romaji: 'owaru', meaning: '结束', status: 'unseen' },
-                { id: 'vrb_21', kanji: '帰る', hiragana: 'かえる', romaji: 'kaeru', meaning: '回去', status: 'unseen' },
-                { id: 'vrb_22', kanji: '分かる', hiragana: 'わかる', romaji: 'wakaru', meaning: '明白/懂', status: 'unseen' },
-                { id: 'vrb_23', kanji: '会う', hiragana: 'あう', romaji: 'au', meaning: '见面', status: 'unseen' },
-                { id: 'vrb_24', kanji: '遊ぶ', hiragana: 'あそぶ', romaji: 'asobu', meaning: '玩', status: 'unseen' },
-                { id: 'vrb_25', kanji: '待つ', hiragana: 'まつ', romaji: 'matsu', meaning: '等待', status: 'unseen' },
-                { id: 'vrb_26', kanji: '乗る', hiragana: 'のる', romaji: 'noru', meaning: '乘坐', status: 'unseen' },
-                { id: 'vrb_27', kanji: '降りる', hiragana: 'おりる', romaji: 'oriru', meaning: '下来/下车', status: 'unseen' },
-                { id: 'vrb_28', kanji: '入る', hiragana: 'はいる', romaji: 'hairu', meaning: '进入', status: 'unseen' },
-                { id: 'vrb_29', kanji: '出る', hiragana: 'deru', meaning: '出去/离开', status: 'unseen' },
-                { id: 'vrb_30', kanji: '立つ', hiragana: 'たつ', romaji: 'tatsu', meaning: '站立', status: 'unseen' },
-                { id: 'vrb_31', kanji: '座る', hiragana: 'すわる', romaji: 'suwaru', meaning: '坐', status: 'unseen' },
-                { id: 'vrb_32', kanji: '泳ぐ', hiragana: 'およぐ', romaji: 'oyogu', meaning: '游泳', status: 'unseen' },
-                { id: 'vrb_33', kanji: '歌う', hiragana: 'うたう', romaji: 'utau', meaning: '唱歌', status: 'unseen' },
-                { id: 'vrb_34', kanji: '呼ぶ', hiragana: 'よぶ', romaji: 'yobu', meaning: '呼叫', status: 'unseen' },
-                { id: 'vrb_35', kanji: '洗う', hiragana: 'あらう', romaji: 'arau', meaning: '洗', status: 'unseen' },
-                { id: 'vrb_36', kanji: '歩く', hiragana: 'あるく', romaji: 'aruku', meaning: '步行', status: 'unseen' },
-                { id: 'vrb_37', kanji: '走る', hiragana: 'はしる', romaji: 'hashiru', meaning: '跑', status: 'unseen' },
-                { id: 'vrb_38', kanji: '教える', hiragana: 'おしえる', romaji: 'oshieru', meaning: '教', status: 'unseen' },
-                { id: 'vrb_39', kanji: '覚える', hiragana: 'おぼえる', romaji: 'oboeru', meaning: '记住', status: 'unseen' },
-                { id: 'vrb_40', kanji: '忘れる', hiragana: 'わすれる', romaji: 'wasureru', meaning: '忘记', status: 'unseen' },
-                { id: 'vrb_41', kanji: '貸す', hiragana: 'かす', romaji: 'kasu', meaning: '借出', status: 'unseen' },
-                { id: 'vrb_42', kanji: '借りる', hiragana: 'かりる', romaji: 'kariru', meaning: '借入', status: 'unseen' },
-                { id: 'vrb_43', kanji: '返す', hiragana: 'かえす', romaji: 'kaesu', meaning: '归还', status: 'unseen' },
-                { id: 'vrb_44', kanji: '脱ぐ', hiragana: 'ぬぐ', romaji: 'nugu', meaning: '脱（衣服）', status: 'unseen' },
-                { id: 'vrb_45', kanji: '着る', hiragana: 'きる', romaji: 'kiru', meaning: '穿（上半身）', status: 'unseen' },
-                { id: 'vrb_46', kanji: '履く', hiragana: 'はく', romaji: 'haku', meaning: '穿（鞋/裤子）', status: 'unseen' },
-                { id: 'vrb_47', kanji: '疲れる', hiragana: 'つかれる', romaji: 'tsukareru', meaning: '疲累', status: 'unseen' },
-                { id: 'vrb_48', kanji: '違う', hiragana: 'ちがう', romaji: 'chigau', meaning: '不同/错误', status: 'unseen' },
-                { id: 'vrb_49', kanji: '閉まる', hiragana: 'しまる', romaji: 'shimaru', meaning: '关闭（自动）', status: 'unseen' },
-                { id: 'vrb_50', kanji: '開く', hiragana: 'あく', romaji: 'aku', meaning: '打开（自动）', status: 'unseen' },
-                { id: 'vrb_51', kanji: '消す', hiragana: 'けす', romaji: 'kesu', meaning: '熄灭/消除', status: 'unseen' },
-                { id: 'vrb_52', kanji: '消える', hiragana: 'きえる', romaji: 'kieru', meaning: '消失/熄灭（自动）', status: 'unseen' },
-                { id: 'vrb_53', kanji: '咲く', hiragana: 'さく', romaji: 'saku', meaning: '开花', status: 'unseen' },
-                { id: 'vrb_54', kanji: '吹く', hiragana: 'ふく', romaji: 'fuku', meaning: '吹', status: 'unseen' },
-                { id: 'vrb_55', kanji: '飛ぶ', hiragana: 'とぶ', romaji: 'tobu', meaning: '飞', status: 'unseen' },
-                { id: 'vrb_56', kanji: '止まる', hiragana: 'とまる', romaji: 'tomaru', meaning: '停止', status: 'unseen' },
-                { id: 'vrb_57', kanji: '曲がる', hiragana: 'まがる', romaji: 'magaru', meaning: '转弯', status: 'unseen' },
-                { id: 'vrb_58', kanji: '渡る', hiragana: 'わたる', romaji: 'wataru', meaning: '渡过', status: 'unseen' },
-                { id: 'vrb_59', kanji: '頼む', hiragana: 'たのむ', romaji: 'tanomu', meaning: '请求', status: 'unseen' },
-                { id: 'vrb_60', kanji: '答える', hiragana: 'こたえる', romaji: 'kotaeru', meaning: '回答', status: 'unseen' },
-                { id: 'vrb_61', kanji: '質問する', hiragana: 'しつもんする', romaji: 'shitsumonsuru', meaning: '提问', status: 'unseen' },
-                { id: 'vrb_62', kanji: '勉強する', hiragana: 'べんきょうする', romaji: 'benkyousuru', meaning: '学习', status: 'unseen' },
-                { id: 'vrb_63', kanji: '掃除する', hiragana: 'そうじする', romaji: 'soujisuru', meaning: '打扫', status: 'unseen' },
-                { id: 'vrb_64', kanji: '料理する', hiragana: 'りょうりする', romaji: 'ryourisuru', meaning: '做饭', status: 'unseen' },
-                { id: 'vrb_65', kanji: '洗濯する', hiragana: 'せんたくする', romaji: 'sentakusuru', meaning: '洗衣服', status: 'unseen' },
-                { id: 'vrb_66', kanji: '散歩する', hiragana: 'さんぽする', romaji: 'sanposuru', meaning: '散步', status: 'unseen' },
-                { id: 'vrb_67', kanji: '結婚する', hiragana: 'けっこんする', romaji: 'kekkonsuru', meaning: '结婚', status: 'unseen' },
-                { id: 'vrb_68', kanji: '急ぐ', hiragana: 'いそぐ', romaji: 'isogu', meaning: '着急/赶快', status: 'unseen' },
-                { id: 'vrb_69', kanji: '遅れる', hiragana: 'おくれる', romaji: 'okureru', meaning: '迟到/落后', status: 'unseen' },
-                { id: 'vrb_70', kanji: '考える', hiragana: 'かんがえる', romaji: 'kangaeru', meaning: '思考', status: 'unseen' },
-                { id: 'vrb_71', kanji: '頑張る', hiragana: 'がんばる', romaji: 'ganbaru', meaning: '努力/加油', status: 'unseen' },
-                { id: 'vrb_72', kanji: '払う', hiragana: 'はらう', romaji: 'harau', meaning: '支付', status: 'unseen' },
-                { id: 'vrb_73', kanji: '探す', hiragana: 'さがす', romaji: 'sagasu', meaning: '寻找', status: 'unseen' },
-                { id: 'vrb_74', kanji: '捨てる', hiragana: 'すてる', romaji: 'suteru', meaning: '扔掉', status: 'unseen' },
-                { id: 'vrb_75', kanji: '片付ける', hiragana: 'かたづける', romaji: 'katadukeru', meaning: '收拾/整理', status: 'unseen' },
-                { id: 'vrb_76', kanji: '込む', hiragana: 'こむ', romaji: 'komu', meaning: '拥挤', status: 'unseen' },
-                { id: 'vrb_77', kanji: '空く', hiragana: 'すく', romaji: 'suku', meaning: '空/饿', status: 'unseen' },
-                { id: 'vrb_78', kanji: '慣れる', hiragana: 'なれる', romaji: 'nareru', meaning: '习惯', status: 'unseen' },
-                { id: 'vrb_79', kanji: '驚く', hiragana: 'おどろく', romaji: 'odoroku', meaning: '惊讶', status: 'unseen' },
-                { id: 'vrb_80', kanji: '喜ぶ', hiragana: 'よろこぶ', romaji: 'yorokobu', meaning: '高兴', status: 'unseen' },
-                { id: 'vrb_81', kanji: '怒る', hiragana: 'おこる', romaji: 'okoru', meaning: '生气', status: 'unseen' },
-                { id: 'vrb_82', kanji: '泣く', hiragana: 'なく', romaji: 'naku', meaning: '哭', status: 'unseen' },
-                { id: 'vrb_83', kanji: '笑う', hiragana: 'わらう', romaji: 'warau', meaning: '笑', status: 'unseen' },
-                { id: 'vrb_84', kanji: '似る', hiragana: 'にる', romaji: 'niru', meaning: '相似', status: 'unseen' },
-                { id: 'vrb_85', kanji: '晴れる', hiragana: 'はれる', romaji: 'hareru', meaning: '放晴 (Weather)', status: 'unseen' },
-                { id: 'vrb_86', kanji: '曇る', hiragana: 'くもる', romaji: 'kumoru', meaning: '变阴 (Weather)', status: 'unseen' },
-                { id: 'vrb_87', kanji: '降る', hiragana: 'ふる', romaji: 'furu', meaning: '降下 (Rain/Snow)', status: 'unseen' },
-                { id: 'vrb_88', kanji: '止む', hiragana: 'やむ', romaji: 'yamu', meaning: '停止 (Rain/Snow)', status: 'unseen' },
-                { id: 'vrb_89', kanji: '冷える', hiragana: 'ひえる', romaji: 'hieru', meaning: '变冷', status: 'unseen' }
-            ],
-            "Nouns": [
-                { id: 'noun_1', kanji: '人', hiragana: 'ひと', romaji: 'hito', meaning: '人', status: 'unseen' },
-                { id: 'noun_2', kanji: '学生', hiragana: 'がくせい', romaji: 'gakusei', meaning: '学生', status: 'unseen' },
-                { id: 'noun_3', kanji: '先生', hiragana: 'せんせい', romaji: 'sensei', meaning: '老师', status: 'unseen' },
-                { id: 'noun_4', kanji: '学校', hiragana: 'がっこう', romaji: 'gakkou', meaning: '学校', status: 'unseen' },
-                { id: 'noun_5', kanji: '会社', hiragana: 'かいしゃ', romaji: 'kaisha', meaning: '公司', status: 'unseen' },
-                { id: 'noun_6', kanji: '家', hiragana: 'いえ', romaji: 'ie', meaning: '家', status: 'unseen' },
-                { id: 'noun_7', kanji: '部屋', hiragana: 'へや', romaji: 'heya', meaning: '房间', status: 'unseen' },
-                { id: 'noun_8', kanji: '友達', hiragana: 'ともだち', romaji: 'tomodachi', meaning: '朋友', status: 'unseen' },
-                { id: 'noun_9', kanji: '時間', hiragana: 'じかん', romaji: 'jikan', meaning: '时间', status: 'unseen' },
-                { id: 'noun_10', kanji: '今日', hiragana: 'きょう', romaji: 'kyou', meaning: '今天', status: 'unseen' },
-                { id: 'noun_11', kanji: '明日', hiragana: 'あした', romaji: 'ashita', meaning: '明天', status: 'unseen' },
-                { id: 'noun_12', kanji: '昨日', hiragana: 'きのう', romaji: 'kinou', meaning: '昨天', status: 'unseen' },
-                { id: 'noun_13', kanji: '水', hiragana: 'みず', romaji: 'mizu', meaning: '水', status: 'unseen' },
-                { id: 'noun_14', kanji: '食べ物', hiragana: 'たべもの', romaji: 'tabemono', meaning: '食物', status: 'unseen' },
-                { id: 'noun_15', kanji: '電車', hiragana: 'でんしゃ', romaji: 'densha', meaning: '电车', status: 'unseen' },
-                { id: 'noun_16', kanji: '駅', hiragana: 'えき', romaji: 'eki', meaning: '车站', status: 'unseen' },
-                { id: 'noun_17', kanji: '店', hiragana: 'みせ', romaji: 'mise', meaning: '店', status: 'unseen' },
-                { id: 'noun_18', kanji: '本', hiragana: 'ほん', romaji: 'hon', meaning: '书', status: 'unseen' },
-                { id: 'noun_19', kanji: '車', hiragana: 'くるま', romaji: 'kuruma', meaning: '车', status: 'unseen' },
-                { id: 'noun_20', kanji: '道', hiragana: 'みち', romaji: 'michi', meaning: '路', status: 'unseen' },
-                { id: 'noun_21', kanji: '家族', hiragana: 'かぞく', romaji: 'kazoku', meaning: '家人', status: 'unseen' },
-                { id: 'noun_22', kanji: 'お金', hiragana: 'おかね', romaji: 'okane', meaning: '钱', status: 'unseen' },
-                { id: 'noun_23', kanji: '名前', hiragana: 'なまえ', romaji: 'namae', meaning: '名字', status: 'unseen' },
-                { id: 'noun_24', kanji: '犬', hiragana: 'いぬ', romaji: 'inu', meaning: '狗', status: 'unseen' },
-                { id: 'noun_25', kanji: '猫', hiragana: 'ねこ', romaji: 'neko', meaning: '猫', status: 'unseen' },
-                { id: 'noun_26', kanji: '目', hiragana: 'め', romaji: 'me', meaning: '眼睛', status: 'unseen' },
-                { id: 'noun_27', kanji: '口', hiragana: 'くち', romaji: 'kuchi', meaning: '嘴巴', status: 'unseen' },
-                { id: 'noun_28', kanji: '手', hiragana: 'て', romaji: 'te', meaning: '手', status: 'unseen' },
-                { id: 'noun_29', kanji: '足', hiragana: 'あし', romaji: 'ashi', meaning: '脚/腿', status: 'unseen' },
-                { id: 'noun_30', kanji: '机', hiragana: 'つくえ', romaji: 'tsukue', meaning: '桌子', status: 'unseen' },
-                { id: 'noun_31', kanji: '椅子', hiragana: 'いす', romaji: 'isu', meaning: '椅子', status: 'unseen' },
-                { id: 'noun_32', kanji: '手紙', hiragana: 'てがみ', romaji: 'tegami', meaning: '信', status: 'unseen' },
-                { id: 'noun_33', kanji: '電話', hiragana: 'でんわ', romaji: 'denwa', meaning: '电话', status: 'unseen' },
-                { id: 'noun_34', kanji: '映画', hiragana: 'えいが', romaji: 'eiga', meaning: '电影', status: 'unseen' },
-                { id: 'noun_35', kanji: '音楽', hiragana: 'おんがく', romaji: 'ongaku', meaning: '音乐', status: 'unseen' },
-                { id: 'noun_36', kanji: '病院', hiragana: 'びょういん', romaji: 'byouin', meaning: '医院', status: 'unseen' },
-                { id: 'noun_37', kanji: '公園', hiragana: 'こうえん', romaji: 'kouen', meaning: '公园', status: 'unseen' },
-                { id: 'noun_38', kanji: '買い物', hiragana: 'かいもの', romaji: 'kaimono', meaning: '购物', status: 'unseen' },
-                { id: 'noun_39', kanji: '荷物', hiragana: 'にもつ', romaji: 'nimotsu', meaning: '行李/包裹', status: 'unseen' },
-                { id: 'noun_40', kanji: '仕事', hiragana: 'しごと', romaji: 'shigoto', meaning: '工作/职业', status: 'unseen' },
-                { id: 'noun_41', kanji: '朝', hiragana: 'あさ', romaji: 'asa', meaning: '早上', status: 'unseen' },
-                { id: 'noun_42', kanji: '昼', hiragana: 'ひる', romaji: 'hiru', meaning: '中午', status: 'unseen' },
-                { id: 'noun_43', kanji: '晩', hiragana: 'ばん', romaji: 'ban', meaning: '晚上', status: 'unseen' },
-                { id: 'noun_44', kanji: '夜', hiragana: 'よる', romaji: 'yoru', meaning: '夜晚', status: 'unseen' },
-                { id: 'noun_45', kanji: '春', hiragana: 'はる', romaji: 'haru', meaning: '春天', status: 'unseen' },
-                { id: 'noun_46', kanji: '夏', hiragana: 'なつ', romaji: 'natsu', meaning: '夏天', status: 'unseen' },
-                { id: 'noun_47', kanji: '秋', hiragana: 'あき', romaji: 'aki', meaning: '秋天', status: 'unseen' },
-                { id: 'noun_48', kanji: '冬', hiragana: 'ふゆ', romaji: 'fuyu', meaning: '冬天', status: 'unseen' },
-                { id: 'noun_49', kanji: '雨', hiragana: 'あめ', romaji: 'ame', meaning: '雨', status: 'unseen' },
-                { id: 'noun_50', kanji: '雪', hiragana: 'ゆき', romaji: 'yuki', meaning: '雪', status: 'unseen' },
-                { id: 'noun_51', kanji: '風', hiragana: 'かぜ', romaji: 'kaze', meaning: '风', status: 'unseen' },
-                { id: 'noun_52', kanji: '空', hiragana: 'そら', romaji: 'sora', meaning: '天空', status: 'unseen' },
-                { id: 'noun_53', kanji: '海', hiragana: 'うみ', romaji: 'umi', meaning: '海', status: 'unseen' },
-                { id: 'noun_54', kanji: '山', hiragana: 'やま', romaji: 'yama', meaning: '山', status: 'unseen' },
-                { id: 'noun_55', kanji: '川', hiragana: 'かわ', romaji: 'kawa', meaning: '河', status: 'unseen' },
-                { id: 'noun_56', kanji: '花', hiragana: 'はな', romaji: 'hana', meaning: '花', status: 'unseen' },
-                { id: 'noun_57', kanji: '木', hiragana: 'き', romaji: 'ki', meaning: '树木', status: 'unseen' },
-                { id: 'noun_58', kanji: '動物', hiragana: 'どうぶつ', romaji: 'doubutsu', meaning: '动物', status: 'unseen' },
-                { id: 'noun_59', kanji: '鳥', hiragana: 'とり', romaji: 'tori', meaning: '鸟', status: 'unseen' },
-                { id: 'noun_60', kanji: '魚', hiragana: 'さかな', romaji: 'sakana', meaning: '鱼', status: 'unseen' },
-                { id: 'noun_61', kanji: 'ご飯', hiragana: 'ごはん', romaji: 'gohan', meaning: '米饭/饭', status: 'unseen' },
-                { id: 'noun_62', kanji: 'パン', hiragana: 'ぱん', romaji: 'pan', meaning: '面包', status: 'unseen' },
-                { id: 'noun_63', kanji: '肉', hiragana: 'にく', romaji: 'niku', meaning: '肉', status: 'unseen' },
-                { id: 'noun_64', kanji: '野菜', hiragana: 'やさい', romaji: 'yasai', meaning: '蔬菜', status: 'unseen' },
-                { id: 'noun_65', kanji: '果物', hiragana: 'くだもの', romaji: 'kudamono', meaning: '水果', status: 'unseen' },
-                { id: 'noun_66', kanji: 'りんご', hiragana: 'りんご', romaji: 'ringo', meaning: '苹果', status: 'unseen' },
-                { id: 'noun_67', kanji: 'みかん', hiragana: 'みかん', romaji: 'mikan', meaning: '橘子', status: 'unseen' },
-                { id: 'noun_68', kanji: 'お茶', hiragana: 'おちゃ', romaji: 'ocha', meaning: '茶', status: 'unseen' },
-                { id: 'noun_69', kanji: 'コーヒー', hiragana: 'こーひー', romaji: 'koohii', meaning: '咖啡', status: 'unseen' },
-                { id: 'noun_70', kanji: '砂糖', hiragana: 'さとう', romaji: 'satou', meaning: '糖', status: 'unseen' },
-                { id: 'noun_71', kanji: '塩', hiragana: 'しお', romaji: 'shio', meaning: '盐', status: 'unseen' },
-                { id: 'noun_72', kanji: '醤油', hiragana: 'しょうゆ', romaji: 'shouyu', meaning: '酱油', status: 'unseen' },
-                { id: 'noun_73', kanji: '服', hiragana: 'ふく', romaji: 'fuku', meaning: '衣服', status: 'unseen' },
-                { id: 'noun_74', kanji: '靴', hiragana: 'くつ', romaji: 'kutsu', meaning: '鞋', status: 'unseen' },
-                { id: 'noun_75', kanji: '帽子', hiragana: 'ぼうし', romaji: 'boushi', meaning: '帽子', status: 'unseen' },
-                { id: 'noun_76', kanji: '傘', hiragana: 'かさ', romaji: 'kasa', meaning: '伞', status: 'unseen' },
-                { id: 'noun_77', kanji: '財布', hiragana: 'さいふ', romaji: 'saifu', meaning: '钱包', status: 'unseen' },
-                { id: 'noun_78', kanji: '時計', hiragana: 'とけい', romaji: 'tokei', meaning: '钟表', status: 'unseen' },
-                { id: 'noun_79', kanji: '眼鏡', hiragana: 'めがね', romaji: 'megane', meaning: '眼镜', status: 'unseen' },
-                { id: 'noun_80', kanji: '鉛筆', hiragana: 'えんぴつ', romaji: 'enpitsu', meaning: '铅笔', status: 'unseen' },
-                { id: 'noun_81', kanji: 'ペン', hiragana: 'ぺん', romaji: 'pen', meaning: '钢笔/笔', status: 'unseen' },
-                { id: 'noun_82', kanji: '辞書', hiragana: 'じしょ', romaji: 'jisho', meaning: '词典', status: 'unseen' },
-                { id: 'noun_83', kanji: '雑誌', hiragana: 'ざっし', romaji: 'zasshi', meaning: '杂志', status: 'unseen' },
-                { id: 'noun_84', kanji: '新聞', hiragana: 'しんぶん', romaji: 'shinbun', meaning: '报纸', status: 'unseen' },
-                { id: 'noun_85', kanji: '手帳', hiragana: 'てちょう', romaji: 'techou', meaning: '记事本', status: 'unseen' },
-                { id: 'noun_86', kanji: '右', hiragana: 'みぎ', romaji: 'migi', meaning: '右边', status: 'unseen' },
-                { id: 'noun_87', kanji: '左', hiragana: 'ひだり', romaji: 'hidari', meaning: '左边', status: 'unseen' },
-                { id: 'noun_88', kanji: '前', hiragana: 'まえ', romaji: 'mae', meaning: '前面', status: 'unseen' },
-                { id: 'noun_89', kanji: '後ろ', hiragana: 'うしろ', romaji: 'ushiro', meaning: '后面', status: 'unseen' },
-                { id: 'noun_90', kanji: '上', hiragana: 'うえ', romaji: 'ue', meaning: '上面', status: 'unseen' },
-                { id: 'noun_91', kanji: '下', hiragana: 'した', romaji: 'shita', meaning: '下面', status: 'unseen' },
-                { id: 'noun_92', kanji: '中', hiragana: 'なか', romaji: 'naka', meaning: '中间/里面', status: 'unseen' },
-                { id: 'noun_93', kanji: '外', hiragana: 'そと', romaji: 'soto', meaning: '外面', status: 'unseen' },
-                { id: 'noun_94', kanji: '隣', hiragana: 'となり', romaji: 'tonari', meaning: '旁边', status: 'unseen' },
-                { id: 'noun_95', kanji: '近く', hiragana: 'ちかく', romaji: 'chikaku', meaning: '附近', status: 'unseen' },
-                { id: 'noun_96', kanji: '天気', hiragana: 'てんき', romaji: 'tenki', meaning: '天气', status: 'unseen' },
-                { id: 'noun_97', kanji: '気温', hiragana: 'きおん', romaji: 'kion', meaning: '气温', status: 'unseen' },
-                { id: 'noun_98', kanji: '風邪', hiragana: 'かぜ', romaji: 'kaze', meaning: '感冒', status: 'unseen' },
-                { id: 'noun_99', kanji: '薬', hiragana: 'くすり', romaji: 'kusuri', meaning: '药', status: 'unseen' },
-                { id: 'noun_100', kanji: '熱', hiragana: 'ねつ', romaji: 'netsu', meaning: '发烧/热', status: 'unseen' },
-                { id: 'noun_101', kanji: '病気', hiragana: 'びょうき', romaji: 'byouki', meaning: '生病', status: 'unseen' },
-                { id: 'noun_102', kanji: '予定', hiragana: 'よてい', romaji: 'yotei', meaning: '计划/预定', status: 'unseen' },
-                { id: 'noun_103', kanji: '約束', hiragana: 'やくそく', romaji: 'yakusoku', meaning: '约定', status: 'unseen' },
-                { id: 'noun_104', kanji: '用事', hiragana: 'ようじ', romaji: 'youji', meaning: '事情', status: 'unseen' },
-                { id: 'noun_105', kanji: '都合', hiragana: 'つごう', romaji: 'tsugou', meaning: '情况/方便与否', status: 'unseen' },
-                { id: 'noun_106', kanji: '機会', hiragana: 'きかい', romaji: 'kikai', meaning: '机会', status: 'unseen' },
-                { id: 'noun_107', kanji: '季節', hiragana: 'きせつ', romaji: 'kisetsu', meaning: '季节', status: 'unseen' },
-                { id: 'noun_108', kanji: '景色', hiragana: 'けしき', romaji: 'keshiki', meaning: '风景', status: 'unseen' },
-                { id: 'noun_109', kanji: '鍵', hiragana: 'かぎ', romaji: 'kagi', meaning: '钥匙', status: 'unseen' },
-                { id: 'noun_110', kanji: 'お風呂', hiragana: 'おふろ', romaji: 'ofuro', meaning: '洗澡/浴缸', status: 'unseen' },
-                { id: 'noun_111', kanji: '洗濯機', hiragana: 'せんたくき', romaji: 'sentakuki', meaning: '洗衣机', status: 'unseen' },
-                { id: 'noun_112', kanji: '冷蔵庫', hiragana: 'れいぞうこ', romaji: 'reizouko', meaning: '冰箱', status: 'unseen' },
-                { id: 'noun_113', kanji: 'エアコン', hiragana: 'えあこん', romaji: 'eakon', meaning: '空调', status: 'unseen' },
-                { id: 'noun_114', kanji: '携帯', hiragana: 'けいたい', romaji: 'keitai', meaning: '手机', status: 'unseen' },
-                { id: 'noun_115', kanji: '現金', hiragana: 'げんきん', romaji: 'genkin', meaning: '现金', status: 'unseen' },
-                { id: 'noun_116', kanji: 'お釣り', hiragana: 'おつり', romaji: 'otsuri', meaning: '找零', status: 'unseen' },
-                { id: 'noun_117', kanji: '地下鉄', hiragana: 'ちかてつ', romaji: 'chikatetsu', meaning: '地铁', status: 'unseen' },
-                { id: 'noun_118', kanji: '自転車', hiragana: 'じてんしゃ', romaji: 'jitensha', meaning: '自行车', status: 'unseen' },
-                { id: 'noun_119', kanji: '飛行機', hiragana: 'ひこうき', romaji: 'hikouki', meaning: '飞机', status: 'unseen' },
-                { id: 'noun_120', kanji: '交差点', hiragana: 'こうさてん', romaji: 'kousaten', meaning: '十字路口', status: 'unseen' }
+        // --- Core Engine & Testing Library ---
+        const defaultTestingLibrary = {
+            "Japanese Basics (Test Deck)": [
+                { id: "test_1", frontText: "食べる", backText: "To eat", status: "unseen", customFields: [{ label: "Reading", side: "front", value: "たべる" }, { label: "Romaji", side: "back", value: "taberu" }] },
+                { id: "test_2", frontText: "飲む", backText: "To drink", status: "unseen", customFields: [{ label: "Reading", side: "front", value: "のむ" }, { label: "Romaji", side: "back", value: "nomu" }] },
+                { id: "test_3", frontText: "行く", backText: "To go", status: "unseen", customFields: [{ label: "Reading", side: "front", value: "いく" }, { label: "Romaji", side: "back", value: "iku" }] }
             ]
         };
 
-        // --- Core Engine ---
         let localDB = JSON.parse(localStorage.getItem('jpnFlashcardDB'));
-        let database = JSON.parse(JSON.stringify(defaultData)); 
-        
-        if (localDB) {
-            for (const deck in localDB) {
-                if (!database[deck]) {
-                    database[deck] = localDB[deck]; 
-                } else {
-                    const defaultIds = new Set(database[deck].map(c => c.id));
-                    localDB[deck].forEach(localCard => {
-                        if (defaultIds.has(localCard.id)) {
-                            database[deck].find(c => c.id === localCard.id).status = localCard.status;
-                        } else {
-                            database[deck].push(localCard);
-                        }
-                    });
-                }
-            }
-        }
-
+        let database = localDB && Object.keys(localDB).length > 0 ? localDB : defaultTestingLibrary;
         let selectedDecks = JSON.parse(localStorage.getItem('jpnSelectedDecks')) || Object.keys(database);
-        
+
         let savedScale = localStorage.getItem('jpnUIScale') || "1.0";
         document.documentElement.style.fontSize = (16 * parseFloat(savedScale)) + 'px';
-        window.addEventListener('DOMContentLoaded', () => {
-            const scaleSelect = document.getElementById('ui-scale');
-            if (scaleSelect) scaleSelect.value = savedScale;
-        });
 
         function changeUIScale() {
             const scale = document.getElementById('ui-scale').value;
             document.documentElement.style.fontSize = (16 * parseFloat(scale)) + 'px';
             localStorage.setItem('jpnUIScale', scale);
         }
-        
+
+        // --- Layout UI Actions ---
+        function toggleSidebar() {
+            if (window.innerWidth <= 800) {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar.classList.contains('open')) {
+                    closeSidebar();
+                } else {
+                    openSidebar();
+                }
+            } else {
+                document.getElementById('sidebar').classList.toggle('collapsed');
+            }
+        }
+
+        function openSidebar() {
+            document.getElementById('sidebar').classList.add('open');
+            document.getElementById('sidebar-overlay').classList.add('show');
+        }
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebar-overlay').classList.remove('show');
+        }
+
+        // --- Theming & Settings Engine ---
+        let isDarkTheme = localStorage.getItem('proTheme') === 'dark';
+
+        function toggleTheme() {
+            isDarkTheme = !isDarkTheme;
+            localStorage.setItem('proTheme', isDarkTheme ? 'dark' : 'light');
+            applyTheme();
+        }
+
+        function applyTheme() {
+            if (isDarkTheme) {
+                document.body.classList.add('dark-theme');
+                document.getElementById('theme-toggle-btn').innerHTML = '☀️ Light Mode';
+                document.getElementById('meta-theme-color').setAttribute('content', '#121212');
+            } else {
+                document.body.classList.remove('dark-theme');
+                document.getElementById('theme-toggle-btn').innerHTML = '🌙 Dark Mode';
+                document.getElementById('meta-theme-color').setAttribute('content', '#ffffff');
+            }
+        }
+
+        function setAccentColor(type) {
+            localStorage.setItem('proAccentType', type);
+            applyAccentColor(type);
+        }
+
+        function applyAccentColor(type) {
+            const root = document.body;
+            root.style.removeProperty('--accent-color');
+            root.style.removeProperty('--accent-text');
+            root.style.removeProperty('--accent-gradient');
+
+            if (type !== 'default') {
+                const colors = {
+                    'blue': { bg: '#1877f2', text: '#ffffff', grad: 'linear-gradient(135deg, #1877f2, #115ebb)' },
+                    'purple': { bg: '#8a2be2', text: '#ffffff', grad: 'linear-gradient(135deg, #8a2be2, #6b21a8)' },
+                    'teal': { bg: '#08a05c', text: '#ffffff', grad: 'linear-gradient(135deg, #08a05c, #047857)' },
+                    'orange': { bg: '#d97706', text: '#ffffff', grad: 'linear-gradient(135deg, #d97706, #b45309)' },
+                    'rose': { bg: '#e03131', text: '#ffffff', grad: 'linear-gradient(135deg, #e03131, #be123c)' }
+                };
+                if (colors[type]) {
+                    root.style.setProperty('--accent-color', colors[type].bg);
+                    root.style.setProperty('--accent-text', colors[type].text);
+                    root.style.setProperty('--accent-gradient', colors[type].grad);
+                }
+            } else {
+                root.style.removeProperty('--accent-gradient');
+            }
+
+            document.querySelectorAll('.color-swatch').forEach(el => el.classList.remove('active'));
+            const activeSwatch = document.getElementById('swatch-' + type);
+            if (activeSwatch) activeSwatch.classList.add('active');
+        }
+
+        function openSettings() {
+            const modal = document.getElementById('settings-modal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('show'), 10);
+        }
+
+        function closeSettings() {
+            const modal = document.getElementById('settings-modal');
+            modal.classList.remove('show');
+            setTimeout(() => modal.style.display = 'none', 200);
+        }
+
+        document.getElementById('settings-modal').addEventListener('click', e => {
+            if (e.target === e.currentTarget) closeSettings();
+        });
+
+        // --- Core App Logic ---
         let activePool = [];
         let currentCardIndex = 0;
-        let isQuizMode = false;
+        let isQuizMode = localStorage.getItem('proQuizMode') === 'true';
+
         let isFlipped = false;
         let isAnimating = false;
 
@@ -921,7 +1944,7 @@
             const dataStr = JSON.stringify(database, null, 2);
             const blob = new Blob([dataStr], { type: "application/json" });
             const url = URL.createObjectURL(blob);
-            
+
             const a = document.createElement('a');
             a.href = url;
             a.download = `flashcard_backup_${new Date().toISOString().split('T')[0]}.json`;
@@ -936,7 +1959,7 @@
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 try {
                     const importedDB = JSON.parse(e.target.result);
                     if (typeof importedDB === 'object' && importedDB !== null) {
@@ -951,34 +1974,124 @@
                 }
             };
             reader.readAsText(file);
-            // Reset input so the same file can be selected again
             event.target.value = '';
         }
 
+        // =============================================
+        // CREATE DECK ENGINE & DRAFT SAVING
+        // =============================================
+        let createCards = [];
+        let createMethod = 'manual';
+        let deckSchema = [];
+
+        let hasUnsavedChanges = false;
+        let autoSaveDraftEnabled = JSON.parse(localStorage.getItem('proAutoSave'));
+        if (autoSaveDraftEnabled === null) autoSaveDraftEnabled = true;
+
+        function toggleAutoSave() {
+            autoSaveDraftEnabled = document.getElementById('auto-save-draft').checked;
+            localStorage.setItem('proAutoSave', JSON.stringify(autoSaveDraftEnabled));
+            if (autoSaveDraftEnabled) triggerAutoSave();
+        }
+
+        function triggerAutoSave() {
+            if (!autoSaveDraftEnabled || !hasUnsavedChanges) return;
+            const draft = {
+                cards: createCards,
+                schema: deckSchema,
+                target: document.getElementById('target-deck-select').value,
+                name: document.getElementById('new-deck-name').value,
+                method: createMethod
+            };
+            localStorage.setItem('proCreateDraft', JSON.stringify(draft));
+        }
+
+        function clearDraft() {
+            hasUnsavedChanges = false;
+            localStorage.removeItem('proCreateDraft');
+        }
+
+        function loadDraft() {
+            const draftStr = localStorage.getItem('proCreateDraft');
+            if (!draftStr) return;
+            try {
+                const draft = JSON.parse(draftStr);
+                if (draft.cards && draft.cards.length > 0) {
+                    deckSchema = draft.schema || [];
+                    createCards = draft.cards;
+                    document.getElementById('target-deck-select').value = draft.target || '_new_';
+                    document.getElementById('new-deck-name').value = draft.name || '';
+
+                    renderManualForm();
+                    switchCreateMethod(draft.method || 'manual');
+                    hasUnsavedChanges = true;
+                    showToast("Unsaved draft restored.");
+                }
+            } catch (e) { }
+        }
+
+        window.addEventListener('beforeunload', function (e) {
+            if (hasUnsavedChanges && !autoSaveDraftEnabled) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
         // --- View Controller ---
         function switchView(view) {
-            document.getElementById('tab-study').classList.toggle('active', view === 'study');
+            if (document.getElementById('tab-create').classList.contains('active') && view !== 'create') {
+                if (hasUnsavedChanges && !autoSaveDraftEnabled) {
+                    if (!confirm("You have unsaved changes. If you leave without Auto-save enabled, they will be lost. Leave anyway?")) {
+                        return;
+                    }
+                }
+            }
+
+            const isStudy = view === 'flashcards' || view === 'quiz';
+            if (isStudy) {
+                isQuizMode = (view === 'quiz');
+                localStorage.setItem('proQuizMode', isQuizMode);
+                if (document.getElementById('app-study').style.display !== 'none' && typeof activePool !== 'undefined' && activePool.length > 0) {
+                    renderCard();
+                }
+            }
+
+            document.getElementById('tab-flashcards').classList.toggle('active', view === 'flashcards');
+            document.getElementById('tab-quiz').classList.toggle('active', view === 'quiz');
             document.getElementById('tab-list').classList.toggle('active', view === 'list');
-            document.getElementById('app-study').style.display = view === 'study' ? 'flex' : 'none';
+            document.getElementById('tab-create').classList.toggle('active', view === 'create');
+
+            if (isStudy) {
+                if (document.getElementById('app-study').style.display === 'none') {
+                    document.getElementById('app-dashboard').style.display = 'block';
+                }
+            } else {
+                document.getElementById('app-dashboard').style.display = 'none';
+                document.getElementById('app-study').style.display = 'none';
+            }
+
             document.getElementById('app-list').classList.toggle('active', view === 'list');
-            if(view === 'list') renderList();
+            document.getElementById('app-create').classList.toggle('active', view === 'create');
+
+            if (isStudy) renderDeckSelector();
+            if (view === 'list') renderList();
+            if (view === 'create') renderCreateList();
         }
 
         // --- Dashboard & Initialization ---
         function applySettings(forceStudyView = true) {
-            // Update Deck Selection
-            selectedDecks = Array.from(document.querySelectorAll('.deck-label input:checked')).map(cb => cb.value);
+            selectedDecks = Array.from(document.querySelectorAll('.sidebar-deck-label input:checked')).map(cb => cb.value);
             saveData();
-            
+
             let pool = [];
             selectedDecks.forEach(deckName => {
-                if(database[deckName]) pool = pool.concat(database[deckName]);
+                if (database[deckName]) pool = pool.concat(database[deckName]);
             });
-            
+
             let reviewCards = pool.filter(c => c.status === 'review');
             let unseenCards = pool.filter(c => c.status === 'unseen');
             let masteredCards = pool.filter(c => c.status === 'mastered');
-            
+
             const shuffle = arr => {
                 for (let i = arr.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
@@ -988,59 +2101,131 @@
             shuffle(reviewCards);
             shuffle(unseenCards);
             shuffle(masteredCards);
-            
+
             let limitStr = document.getElementById('session-limit').value;
             let hasLimit = limitStr && parseInt(limitStr) > 0;
             let limit = hasLimit ? parseInt(limitStr) : reviewCards.length + unseenCards.length;
-            
-            // Include up to 25% mastered cards for testing retention
+
             let numMastered = Math.min(masteredCards.length, Math.max(1, Math.floor(limit * 0.25)));
             if (reviewCards.length + unseenCards.length === 0) {
                 numMastered = hasLimit ? limit : Math.min(masteredCards.length, 20);
             }
             let selectedMastered = masteredCards.slice(0, numMastered);
-            
+
             let numLearning = Math.max(0, limit - selectedMastered.length);
-            
-            // Ensure a mix of review and unseen cards
             let numReview = Math.min(reviewCards.length, Math.ceil(numLearning / 2));
             let numUnseen = Math.min(unseenCards.length, numLearning - numReview);
-            
-            // If we didn't fill numLearning, top off with review cards if available
+
             if (numReview + numUnseen < numLearning) {
                 numReview = Math.min(reviewCards.length, numLearning - numUnseen);
             }
-            
+
             let learningCards = reviewCards.slice(0, numReview).concat(unseenCards.slice(0, numUnseen));
-            
+
             activePool = selectedMastered.concat(learningCards);
             shuffle(activePool);
 
-            // Initialize session tracking
             activePool.forEach(c => c.sessionMastered = false);
 
             currentCardIndex = 0;
             updateStats();
             renderCard();
-            
-            // Force switch to study view if clicking compile
-            if (forceStudyView) {
-                switchView('study');
-            } else if (document.getElementById('tab-list').classList.contains('active')) {
-                renderList();
+
+            if (forceStudyView && activePool.length > 0) {
+                document.getElementById('app-dashboard').style.display = 'none';
+                document.getElementById('app-study').style.display = 'flex';
+                if (window.innerWidth <= 800) closeSidebar();
+            } else if (forceStudyView && activePool.length === 0) {
+                alert("Please select at least one deck from the sidebar first.");
+                if (window.innerWidth <= 800) openSidebar();
             }
         }
 
         function renderDeckSelector() {
             const container = document.getElementById('deck-selector');
             container.innerHTML = '';
-            Object.keys(database).forEach(deckName => {
+
+            const deckNames = Object.keys(database);
+
+            if (deckNames.length === 0) {
+                container.innerHTML = `<div style="color: var(--text-secondary); font-size: 0.85rem; text-align: center; margin-top: 20px;">No decks found.<br>Create one!</div>`;
+                return;
+            }
+
+            deckNames.forEach(deckName => {
                 const isChecked = selectedDecks.includes(deckName);
                 const label = document.createElement('label');
-                label.className = 'deck-label';
-                label.innerHTML = `<input type="checkbox" value="${deckName}" ${isChecked ? 'checked' : ''} onchange="applySettings(false)"> ${deckName}`;
+                label.className = 'sidebar-deck-label ' + (isChecked ? 'active' : '');
+
+                // SVG checkmark/box
+                const icon = isChecked
+                    ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`
+                    : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.3"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>`;
+
+                label.innerHTML = `
+                    <span style="display:flex; align-items:center; gap: 10px;">
+                        ${icon}
+                        <span class="deck-name-text">${escHtml(deckName)}</span>
+                    </span>
+                    <input type="checkbox" value="${escHtml(deckName)}" ${isChecked ? 'checked' : ''} style="display:none;" onchange="toggleSidebarDeck()">
+                `;
                 container.appendChild(label);
             });
+        }
+
+        function toggleSidebarDeck() {
+            selectedDecks = Array.from(document.querySelectorAll('.sidebar-deck-label input:checked')).map(cb => cb.value);
+            saveData();
+            renderDeckSelector();
+        }
+
+        function populateTargetDeckSelect() {
+            const select = document.getElementById('target-deck-select');
+            select.innerHTML = '<option value="_new_">+ Create New Deck</option>';
+            Object.keys(database).forEach(deckName => {
+                const opt = document.createElement('option');
+                opt.value = deckName;
+                opt.textContent = `Edit: ${deckName}`;
+                select.appendChild(opt);
+            });
+        }
+
+        function onTargetDeckChange() {
+            const val = document.getElementById('target-deck-select').value;
+            const nameInput = document.getElementById('new-deck-name');
+
+            deckSchema = [];
+            closeFieldBuilder();
+
+            if (val === '_new_') {
+                nameInput.style.display = 'block';
+                nameInput.value = '';
+                createCards = [];
+            } else {
+                nameInput.style.display = 'none';
+                let existingDeck = JSON.parse(JSON.stringify(database[val]));
+
+                existingDeck.forEach(c => {
+                    if (c.customFields) {
+                        c.customFields.forEach(cf => {
+                            if (!deckSchema.find(s => s.label === cf.label)) {
+                                deckSchema.push({ label: cf.label, side: cf.side });
+                            }
+                        });
+                    }
+                });
+
+                createCards = existingDeck.map(c => ({
+                    id: c.id, status: c.status,
+                    front: c.frontText || c.kanji, back: c.backText || c.meaning,
+                    customFields: c.customFields || []
+                }));
+            }
+
+            renderManualForm();
+            if (createMethod === 'csv') populateCsvFromCards();
+            if (createMethod === 'list') renderCreateList();
+            updateCreateCount();
         }
 
         // --- Flashcard Logic ---
@@ -1049,83 +2234,144 @@
             document.getElementById('stat-unseen').textContent = `${leftCount} Left`;
         }
 
-        function setMode(mode) {
-            isQuizMode = (mode === 'quiz');
-            document.getElementById('btn-seq').classList.toggle('active', !isQuizMode);
-            document.getElementById('btn-quiz').classList.toggle('active', isQuizMode);
-            nextCard();
-        }
-
         function renderCard() {
             const cardEl = document.getElementById('flashcard');
-            
             let unmastered = activePool.filter(c => !c.sessionMastered);
 
             if (unmastered.length === 0 || activePool.length === 0) {
                 document.getElementById('front-text').innerHTML = "All Done! 🎉<br><span style='font-size: 1.2rem; color: var(--text-secondary);'>Session Mastered</span>";
-                document.getElementById('back-hiragana').textContent = "";
-                document.getElementById('back-romaji').textContent = "";
-                document.getElementById('back-meaning').textContent = "";
-                
+                document.getElementById('back-text').textContent = "";
+                document.getElementById('front-custom').style.display = 'none';
+                document.getElementById('back-custom').style.display = 'none';
+                if(document.getElementById('quiz-options-container')) document.getElementById('quiz-options-container').style.display = 'none';
+
                 isFlipped = false;
                 draggedX = 0;
                 cardEl.style.transition = 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
-                cardEl.style.transform = ''; 
+                cardEl.style.transform = '';
                 cardEl.classList.remove('is-flipped');
                 document.getElementById('eval-controls').classList.remove('visible');
-                
+
                 let testBadge = document.getElementById('test-badge');
                 if (testBadge) testBadge.style.display = 'none';
                 return;
             }
 
             const card = activePool[currentCardIndex];
-            document.getElementById('front-text').textContent = card.kanji;
-            document.getElementById('back-hiragana').textContent = card.hiragana;
-            document.getElementById('back-romaji').textContent = card.romaji;
-            document.getElementById('back-meaning').textContent = card.meaning;
+            document.getElementById('front-text').textContent = card.frontText || card.kanji;
+            document.getElementById('back-text').textContent = card.backText || card.meaning;
+
+            const frontCustom = document.getElementById('front-custom');
+            const backCustom = document.getElementById('back-custom');
+            frontCustom.innerHTML = '';
+            backCustom.innerHTML = '';
+            frontCustom.style.display = 'none';
+            backCustom.style.display = 'none';
+
+            if (card.customFields && card.customFields.length > 0) {
+                card.customFields.forEach(cf => {
+                    if (!cf.value) return;
+                    const html = `<div class="cf-item"><span class="cf-label">${cf.label}</span><span class="cf-value">${cf.value}</span></div>`;
+                    if (cf.side === 'front') {
+                        frontCustom.innerHTML += html;
+                        frontCustom.style.display = 'flex';
+                    } else {
+                        backCustom.innerHTML += html;
+                        backCustom.style.display = 'flex';
+                    }
+                });
+            }
+
+            const quizContainer = document.getElementById('quiz-options-container');
+            if (quizContainer) {
+                const currentBackText = card.backText || card.meaning;
+                if (isQuizMode && currentBackText) {
+                    let allBacks = [];
+                    Object.values(database).forEach(deck => {
+                        deck.forEach(c => {
+                            const bt = c.backText || c.meaning;
+                            if (bt && bt !== currentBackText && !allBacks.includes(bt)) {
+                                allBacks.push(bt);
+                            }
+                        });
+                    });
+                    
+                    allBacks.sort(() => 0.5 - Math.random());
+                    const options = [currentBackText, ...allBacks.slice(0, 3)];
+                    options.sort(() => 0.5 - Math.random());
+                    
+                    quizContainer.innerHTML = '';
+                    options.forEach(opt => {
+                        const btn = document.createElement('button');
+                        btn.className = 'quiz-btn';
+                        btn.textContent = opt;
+                        btn.onclick = (e) => {
+                            e.stopPropagation();
+                            if (quizContainer.classList.contains('answered')) return;
+                            quizContainer.classList.add('answered');
+                            
+                            if (opt === currentBackText) {
+                                btn.classList.add('correct');
+                            } else {
+                                btn.classList.add('wrong');
+                                Array.from(quizContainer.children).forEach(child => {
+                                    if (child.textContent === currentBackText) child.classList.add('correct');
+                                });
+                            }
+                            
+                            setTimeout(() => {
+                                if (!isFlipped) {
+                                    isFlipped = true;
+                                    document.getElementById('flashcard').classList.add('is-flipped');
+                                    document.getElementById('eval-controls').classList.add('visible');
+                                }
+                            }, 400);
+                        };
+                        quizContainer.appendChild(btn);
+                    });
+                    quizContainer.style.display = 'flex';
+                    quizContainer.classList.remove('answered');
+                } else {
+                    quizContainer.style.display = 'none';
+                }
+            }
 
             let testBadge = document.getElementById('test-badge');
             if (!testBadge) {
                 testBadge = document.createElement('div');
                 testBadge.id = 'test-badge';
                 testBadge.style.cssText = `
-                    position: absolute;
-                    top: 16px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    color: white;
-                    padding: 4px 12px;
-                    border-radius: 99px;
-                    font-size: 0.75rem;
-                    font-weight: 700;
-                    letter-spacing: 0.5px;
-                    text-transform: uppercase;
+                    position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+                    padding: 4px 12px; border-radius: 99px; font-size: 0.75rem; font-weight: 700;
+                    letter-spacing: 0.5px; text-transform: uppercase; border: 1px solid var(--border-color);
                 `;
                 document.querySelector('.card-front').appendChild(testBadge);
             }
-            
+
             if (card.status === 'mastered') {
                 testBadge.textContent = 'Mastery Test';
-                testBadge.style.background = 'var(--accent-blue)';
-                testBadge.style.boxShadow = '0 2px 8px rgba(24, 119, 242, 0.3)';
+                testBadge.style.background = 'var(--accent-color)';
+                testBadge.style.color = 'var(--accent-text)';
+                testBadge.style.borderColor = 'transparent';
+                testBadge.style.boxShadow = 'var(--shadow-soft)';
                 testBadge.style.display = 'block';
             } else if (card.status === 'review') {
                 testBadge.textContent = 'Review';
                 testBadge.style.background = 'var(--btn-red)';
-                testBadge.style.boxShadow = '0 2px 8px rgba(255, 75, 75, 0.3)';
+                testBadge.style.color = 'white';
+                testBadge.style.borderColor = 'transparent';
+                testBadge.style.boxShadow = 'var(--shadow-soft)';
                 testBadge.style.display = 'block';
             } else {
                 testBadge.style.display = 'none';
             }
-            
+
             isFlipped = false;
             draggedX = 0;
             cardEl.style.transition = 'none';
-            cardEl.style.transform = ''; // reset position completely
+            cardEl.style.transform = '';
             cardEl.classList.remove('is-flipped');
-            
-            // Re-enable smooth transitions slightly after reset
+
             setTimeout(() => {
                 cardEl.style.transition = 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
             }, 20);
@@ -1133,13 +2379,12 @@
             document.getElementById('eval-controls').classList.remove('visible');
         }
 
-        // Drag tracking variable so click doesn't trigger if we dragged
-        let draggedX = 0; 
+        let draggedX = 0;
 
         document.getElementById('card-container').addEventListener('click', (e) => {
-            if(Math.abs(draggedX) > 10) return; // Ignore click if we swiped
-            if(activePool.length === 0 || isAnimating) return;
-            
+            if (Math.abs(draggedX) > 10) return;
+            if (activePool.length === 0 || isAnimating) return;
+
             isFlipped = !isFlipped;
             document.getElementById('flashcard').classList.toggle('is-flipped');
             document.getElementById('eval-controls').classList.toggle('visible', isFlipped);
@@ -1148,13 +2393,13 @@
         function markCard(status, event) {
             if (event) event.stopPropagation();
             if (!isFlipped || activePool.length === 0 || isAnimating) return;
-            
+
             const card = activePool[currentCardIndex];
             for (const deck in database) {
                 const dbCard = database[deck].find(c => c.id === card.id);
                 if (dbCard) dbCard.status = status;
             }
-            
+
             card.status = status;
             card.sessionMastered = (status === 'mastered');
             saveData();
@@ -1187,16 +2432,7 @@
         // --- Swipe Logistics ---
         const container = document.getElementById('card-container');
         const flashcardEl = document.getElementById('flashcard');
-        
-        // Register Service Worker for PWA
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker registered', reg))
-                    .catch(err => console.error('Service Worker registration failed', err));
-            });
-        }
-        
+
         let startX = 0, currentX = 0, isDragging = false;
 
         container.addEventListener('pointerdown', e => {
@@ -1220,30 +2456,29 @@
             if (!isDragging) return;
             isDragging = false;
             container.releasePointerCapture(e.pointerId);
-            
-            if (Math.abs(currentX) > 120) { // Threshold for marking
+
+            if (Math.abs(currentX) > 120) {
                 isAnimating = true;
                 const direction = currentX > 0 ? 1 : -1;
                 flashcardEl.style.transition = 'transform 0.3s ease-out';
                 flashcardEl.style.transform = `rotateY(180deg) translate(${-direction * window.innerWidth}px, 0) rotateZ(${direction * 30}deg)`;
-                
+
                 setTimeout(() => {
                     isAnimating = false;
                     markCard(direction > 0 ? 'mastered' : 'review');
                 }, 300);
             } else {
-                // Snap back if threshold not met
                 flashcardEl.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
                 flashcardEl.style.transform = '';
             }
             currentX = 0;
         });
 
-        document.addEventListener('keydown', function(event) {
-            if (event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT') return;
+        document.addEventListener('keydown', function (event) {
+            if (event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT' || event.target.tagName === 'TEXTAREA') return;
             if (event.code === 'Space' || event.code === 'ArrowUp' || event.code === 'ArrowDown') {
                 event.preventDefault();
-                if(Math.abs(draggedX) < 10) {
+                if (Math.abs(draggedX) < 10) {
                     isFlipped = !isFlipped;
                     flashcardEl.classList.toggle('is-flipped');
                     document.getElementById('eval-controls').classList.toggle('visible', isFlipped);
@@ -1290,38 +2525,17 @@
         document.addEventListener('fullscreenchange', handleFullscreenChange);
         document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
 
-        let lastTapTime = 0;
-        document.addEventListener('touchend', function(e) {
-            const tagName = e.target.tagName.toLowerCase();
-            if (['button', 'input', 'select'].includes(tagName) || e.target.closest('.eval-controls') || e.target.closest('.fullscreen-icon')) {
-                return;
-            }
-            const currentTime = new Date().getTime();
-            const tapLength = currentTime - lastTapTime;
-            if (tapLength < 300 && tapLength > 0) {
-                toggleFullScreen(document.documentElement);
-                e.preventDefault();
-            }
-            lastTapTime = currentTime;
-        }, { passive: false });
 
-        document.addEventListener('dblclick', function(e) {
-            const tagName = e.target.tagName.toLowerCase();
-            if (['button', 'input', 'select'].includes(tagName) || e.target.closest('.eval-controls') || e.target.closest('.fullscreen-icon')) {
-                return;
-            }
-            toggleFullScreen(document.documentElement);
-        });
 
         // --- List Revision Logic ---
         let currentListFilter = 'all';
 
         function toggleDropdown(event) {
-            if(event) event.stopPropagation();
+            if (event) event.stopPropagation();
             document.getElementById('list-filter-dropdown').classList.toggle('active');
         }
 
-        function selectFilter(value, text, el) {
+        function selectFilter(value, text, el, event) {
             if (event) event.stopPropagation();
             currentListFilter = value;
             document.getElementById('list-filter-selected').textContent = text;
@@ -1343,7 +2557,7 @@
 
             let listPool = [];
             selectedDecks.forEach(deckName => {
-                if(database[deckName]) listPool = listPool.concat(database[deckName]);
+                if (database[deckName]) listPool = listPool.concat(database[deckName]);
             });
 
             if (filter !== 'all') {
@@ -1353,13 +2567,13 @@
             listPool.forEach(card => {
                 const item = document.createElement('div');
                 item.className = 'list-item';
-                
+
                 let badgeClass = card.status === 'unseen' ? 'unseen' : (card.status === 'review' ? 'review' : 'mastered');
-                
+
                 item.innerHTML = `
                     <div class="list-info">
-                        <span class="list-kanji">${card.kanji} <span style="font-size: 0.9rem; font-weight:normal;">(${card.hiragana})</span></span>
-                        <span class="list-meaning">${card.meaning}</span>
+                        <span class="list-front">${card.frontText || card.kanji}</span>
+                        <span class="list-back">${card.backText || card.meaning}</span>
                     </div>
                     <div class="list-actions">
                         <span class="badge ${badgeClass}">${card.status}</span>
@@ -1376,17 +2590,397 @@
                 if (dbCard) dbCard.status = 'unseen';
             }
             saveData();
-            renderList(); // Re-render the list immediately
-            
-            // Sync with active pool if studying
+            renderList();
+
             const activeCard = activePool.find(c => c.id === cardId);
-            if(activeCard) activeCard.status = 'unseen';
+            if (activeCard) activeCard.status = 'unseen';
             updateStats();
         }
 
-        // Init App
-        renderDeckSelector();
-        applySettings(false); // Compiles pool and sets up initial card
+
+        // --- Custom Field Builder Logic ---
+        let pendingFieldSide = 'front';
+
+        function setFieldSide(side) {
+            pendingFieldSide = side;
+            document.getElementById('st-front').classList.toggle('active', side === 'front');
+            document.getElementById('st-back').classList.toggle('active', side === 'back');
+        }
+
+        function openFieldBuilder() {
+            document.getElementById('field-builder-wrapper').classList.add('show');
+            document.getElementById('new-field-name').focus();
+            setFieldSide('back');
+        }
+
+        function closeFieldBuilder() {
+            document.getElementById('field-builder-wrapper').classList.remove('show');
+            document.getElementById('new-field-name').value = '';
+        }
+
+        function confirmAddField() {
+            const labelInput = document.getElementById('new-field-name');
+            const label = labelInput.value.trim();
+            const side = pendingFieldSide;
+
+            if (!label) {
+                alert("Please enter a field name.");
+                return;
+            }
+
+            if (deckSchema.find(s => s.label.toLowerCase() === label.toLowerCase())) {
+                alert("A field with this name already exists.");
+                return;
+            }
+
+            deckSchema.push({ label, side });
+            closeFieldBuilder();
+
+            renderManualForm();
+            if (createMethod === 'list') renderCreateList();
+        }
+
+        // --- CSV Dynamic Format Updater ---
+        function updateCsvUi() {
+            const input = document.getElementById('csv-input');
+            const hint = document.getElementById('csv-hint-text');
+
+            let formatStr = 'front, back';
+            let placeholderStr = `front, back\nParis, France\nH2O, Water`;
+
+            if (deckSchema.length > 0) {
+                const customNames = deckSchema.map(f => f.label).join(', ');
+                formatStr += ', ' + customNames;
+
+                let sampleLine1 = 'Paris, France';
+                let sampleLine2 = 'H2O, Water';
+                deckSchema.forEach(f => {
+                    sampleLine1 += `, sample ${f.label.toLowerCase()}`;
+                    sampleLine2 += `, sample ${f.label.toLowerCase()}`;
+                });
+                placeholderStr = `${formatStr}\n${sampleLine1}\n${sampleLine2}`;
+            }
+
+            input.placeholder = placeholderStr;
+            hint.innerHTML = `One card per line &bull; Format: <code>${formatStr}</code><br>Changes update the card list instantly — switch to List tab to review &amp; edit.`;
+        }
+
+        function renderManualForm() {
+            const form = document.getElementById('manual-form');
+            let html = `
+                <div class="field-row">
+                    <div class="field-group"><label>Front</label><input type="text" id="mf-front" placeholder="Question / Concept" autocomplete="off"></div>
+                    <div class="field-group"><label>Back</label><input type="text" id="mf-back" placeholder="Answer / Definition" autocomplete="off"></div>
+                </div>
+            `;
+
+            if (deckSchema.length > 0) {
+                html += `<div class="field-row" style="margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 10px;">`;
+                deckSchema.forEach((field, i) => {
+                    html += `<div class="field-group"><label>${field.label} (${field.side})</label><input type="text" id="mf-custom-${i}" placeholder="Custom field..." autocomplete="off"></div>`;
+                });
+                html += `</div>`;
+            }
+
+            form.innerHTML = html;
+
+            form.querySelectorAll('input').forEach(el => {
+                el.addEventListener('keydown', e => {
+                    if (e.key === 'Enter') { e.preventDefault(); manualAddCard(); }
+                });
+            });
+
+            updateCsvUi();
+        }
+
+        function switchCreateMethod(method) {
+            try {
+                if (createMethod === 'csv') flushCsv();
+                if (createMethod === 'list') flushList();
+            } catch (e) {
+                console.error("Sync error:", e);
+            }
+
+            createMethod = method;
+
+            document.getElementById('cmb-manual').classList.toggle('active', method === 'manual');
+            document.getElementById('cmb-csv').classList.toggle('active', method === 'csv');
+            document.getElementById('cmb-list').classList.toggle('active', method === 'list');
+
+            document.getElementById('create-manual-view').style.display = method === 'manual' ? 'block' : 'none';
+            document.getElementById('create-csv-view').style.display = method === 'csv' ? 'block' : 'none';
+            document.getElementById('create-list-view').style.display = method === 'list' ? 'block' : 'none';
+
+            if (method === 'csv') populateCsvFromCards();
+            if (method === 'list') renderCreateList();
+            updateCreateCount();
+        }
+
+        function manualAddCard() {
+            const front = document.getElementById('mf-front').value.trim();
+            const back = document.getElementById('mf-back').value.trim();
+            if (!front || !back) return;
+
+            let customFields = [];
+            deckSchema.forEach((field, i) => {
+                const val = document.getElementById(`mf-custom-${i}`).value.trim();
+                if (val) customFields.push({ label: field.label, side: field.side, value: val });
+            });
+
+            createCards.push({ front, back, customFields });
+
+            document.getElementById('mf-front').value = '';
+            document.getElementById('mf-back').value = '';
+            deckSchema.forEach((_, i) => document.getElementById(`mf-custom-${i}`).value = '');
+
+            document.getElementById('mf-front').focus();
+            updateCreateCount();
+            flashAddFeedback();
+            if (createMethod === 'list') renderCreateList();
+        }
+
+        function onCsvInput() {
+            flushCsv();
+            updateCreateCount();
+        }
+
+        function flushCsv() {
+            const raw = document.getElementById('csv-input').value;
+            createCards = parseCsv(raw);
+        }
+
+        function parseCsv(text) {
+            if (!text || text.trim() === '') return [];
+
+            return text.split('\n')
+                .map(line => line.trim())
+                .filter(line => line && line.includes(','))
+                .map(line => {
+                    const parts = line.split(',').map(p => p.trim());
+                    let card = {
+                        front: parts[0] || '',
+                        back: parts[1] || '',
+                        customFields: []
+                    };
+
+                    deckSchema.forEach((field, i) => {
+                        if (parts[2 + i]) {
+                            card.customFields.push({ label: field.label, side: field.side, value: parts[2 + i] });
+                        }
+                    });
+
+                    return card;
+                })
+                .filter(c => c.front && c.back);
+        }
+
+        function populateCsvFromCards() {
+            const lines = createCards.map(c => {
+                let line = c.front + ', ' + c.back;
+                if (c.customFields && deckSchema.length > 0) {
+                    deckSchema.forEach(field => {
+                        const cf = c.customFields.find(f => f.label === field.label);
+                        line += ', ' + (cf && cf.value ? cf.value : '');
+                    });
+                }
+                return line;
+            }).join('\n');
+            document.getElementById('csv-input').value = lines;
+        }
+
+        function flushList() {
+            const rows = document.querySelectorAll('.create-card-item');
+            createCards = [];
+            rows.forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                const front = inputs[0] ? inputs[0].value.trim() : '';
+                const back = inputs[1] ? inputs[1].value.trim() : '';
+
+                let customFields = [];
+                deckSchema.forEach((field, i) => {
+                    const customInput = inputs[2 + i];
+                    if (customInput && customInput.value.trim()) {
+                        customFields.push({ label: field.label, side: field.side, value: customInput.value.trim() });
+                    }
+                });
+
+                if (front && back) createCards.push({ front, back, customFields });
+            });
+        }
+
+        function renderCreateList() {
+            const container = document.getElementById('create-card-list');
+            if (createCards.length === 0) {
+                container.innerHTML = '<div class="create-empty-state">No cards yet.<br>Add via Manual or CSV tab, or tap + Add card below.</div>';
+                return;
+            }
+            container.innerHTML = '';
+            createCards.forEach((card, i) => {
+                let customInputs = '';
+                deckSchema.forEach(field => {
+                    let existingVal = '';
+                    if (card.customFields) {
+                        const cf = card.customFields.find(c => c.label === field.label);
+                        if (cf) existingVal = cf.value;
+                    }
+                    customInputs += `<input type="text" value="${escHtml(existingVal)}" placeholder="${field.label} (${field.side})" data-field="custom_${field.label}" oninput="liveUpdateCard(${i},this)">`;
+                });
+
+                const item = document.createElement('div');
+                item.className = 'create-card-item';
+                item.dataset.index = i;
+                item.innerHTML = `
+                    <span class="card-num">${i + 1}</span>
+                    <div class="card-fields">
+                        <input type="text" value="${escHtml(card.front)}" placeholder="Front" data-field="front" oninput="liveUpdateCard(${i},this)">
+                        <input type="text" value="${escHtml(card.back)}" placeholder="Back" data-field="back" oninput="liveUpdateCard(${i},this)">
+                        ${customInputs}
+                    </div>
+                    <button class="btn-del-card" onclick="deleteCreateCard(${i})" title="Remove">✕</button>
+                `;
+                container.appendChild(item);
+            });
+            updateCreateCount();
+        }
+
+        function liveUpdateCard(index, input) {
+            const field = input.dataset.field;
+            if (!createCards[index]) return;
+
+            if (field.startsWith('custom_')) {
+                const label = field.replace('custom_', '');
+                if (!createCards[index].customFields) createCards[index].customFields = [];
+
+                let cf = createCards[index].customFields.find(c => c.label === label);
+                const side = deckSchema.find(s => s.label === label)?.side || 'back';
+
+                if (cf) {
+                    cf.value = input.value.trim();
+                } else {
+                    createCards[index].customFields.push({ label, side, value: input.value.trim() });
+                }
+            } else {
+                createCards[index][field] = input.value.trim();
+            }
+            updateCreateCount();
+        }
+
+        function deleteCreateCard(index) {
+            createCards.splice(index, 1);
+            renderCreateList();
+            if (createMethod === 'csv') populateCsvFromCards();
+        }
+
+        function listAddBlankCard() {
+            createCards.push({ front: '', back: '', customFields: [] });
+            renderCreateList();
+            const rows = document.querySelectorAll('.create-card-item');
+            const lastRow = rows[rows.length - 1];
+            if (lastRow) lastRow.querySelector('input').focus();
+        }
+
+        function updateCreateCount() {
+            const validCount = createCards.filter(c => c.front && c.back).length;
+            document.getElementById('create-count').textContent = validCount + (validCount === 1 ? ' card' : ' cards');
+            document.getElementById('btn-save-deck').disabled = validCount === 0;
+
+            if (createCards.length > 0) hasUnsavedChanges = true;
+            triggerAutoSave();
+        }
+
+        function saveDeck() {
+            if (createMethod === 'csv') flushCsv();
+            if (createMethod === 'list') flushList();
+
+            const validCards = createCards.filter(c => c.front && c.back);
+            if (validCards.length === 0) {
+                showToast('Add at least one card first!');
+                return;
+            }
+
+            const targetSelect = document.getElementById('target-deck-select').value;
+            const deckNameInput = document.getElementById('new-deck-name');
+
+            let finalName = targetSelect === '_new_' ? (deckNameInput.value.trim() || 'My Custom Deck') : targetSelect;
+
+            if (targetSelect === '_new_') {
+                let suffix = 2;
+                let originalName = finalName;
+                while (database[finalName]) {
+                    finalName = originalName + ' ' + suffix++;
+                }
+            }
+
+            const newCards = validCards.map((c, i) => ({
+                id: c.id || ('custom_' + Date.now() + '_' + i),
+                frontText: c.front,
+                backText: c.back,
+                status: c.status || 'unseen',
+                customFields: c.customFields || []
+            }));
+
+            database[finalName] = newCards;
+            saveData();
+            clearDraft();
+            renderDeckSelector();
+            populateTargetDeckSelect();
+
+            document.getElementById('target-deck-select').value = '_new_';
+            onTargetDeckChange();
+            document.getElementById('csv-input').value = '';
+
+            showToast(`"${finalName}" saved — ${newCards.length} cards total!`);
+        }
+
+        // --- Helpers ---
+        function flashAddFeedback() {
+            const badge = document.getElementById('create-count');
+            badge.style.background = '#d4f5e3';
+            badge.style.color = '#00a05a';
+            setTimeout(() => { badge.style.background = ''; badge.style.color = ''; }, 600);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('create-toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2800);
+        }
+
+        function escHtml(str) {
+            return (str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        // ── Initialization ──────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            const scaleSelect = document.getElementById('ui-scale');
+            if (scaleSelect) scaleSelect.value = savedScale;
+
+            document.getElementById('create-manual-view').style.display = 'block';
+            document.getElementById('create-csv-view').style.display = 'none';
+            document.getElementById('create-list-view').style.display = 'none';
+
+            // Init Settings
+            applyTheme();
+            const savedAccent = localStorage.getItem('proAccentType') || 'default';
+            applyAccentColor(savedAccent);
+            document.getElementById('auto-save-draft').checked = autoSaveDraftEnabled;
+            loadDraft();
+
+            renderManualForm();
+            updateCreateCount();
+            renderDeckSelector();
+            populateTargetDeckSelect();
+
+            // Wait to ensure DOM elements are fully painted before applying settings
+            setTimeout(() => applySettings(false), 50);
+        });
+
+        // Initialize based on saved mode
+        document.addEventListener('DOMContentLoaded', () => {
+            switchView(isQuizMode ? 'quiz' : 'flashcards');
+        });
     </script>
 </body>
+
 </html>
