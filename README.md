@@ -2,6 +2,10 @@
 
 A small, browser-based Japanese N5 flashcard project with spaced repetition and Progressive Web App support.
 
+## Try it
+
+[Open the GitHub Pages demo](https://afugegege.github.io/Flashcard-web/Flashcard-N5.html).
+
 ## Run locally
 
 Clone the repository and open `Flashcard-N5.html` in a modern browser.
@@ -14,4 +18,4 @@ Clone the repository and open `Flashcard-N5.html` in a modern browser.
 
 ## Status
 
-A compact learning project; no hosted demo is currently published.
+A compact learning project, published as a GitHub Pages demo.
